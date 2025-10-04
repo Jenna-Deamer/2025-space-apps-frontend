@@ -45,8 +45,8 @@ export interface AirQualityApiResponse {
 }
 
 export const airQualityService = {
-    async getGroundData(): Promise<GroundDataResponse | null> {
-        const CACHE_KEY = 'groundData_cache';
+    async getGroundData(lon: number, lat: number): Promise<GroundDataResponse | null> {
+        const CACHE_KEY = `groundData_cache_${lon}_${lat}`;
 
         // Checking if we have cached data
         const cached = localStorage.getItem(CACHE_KEY);
@@ -63,7 +63,7 @@ export const airQualityService = {
 
         try {
             console.log('Fetching Ground data...');
-            const response = await fetch('http://localhost:8080/api/ground-based-air-quality/retrieve');
+            const response = await fetch(`http://localhost:8080/api/ground-based-air-quality/retrieve?lat=${lat}&lon=${lon}`);
             if (!response.ok) throw new Error('Failed to fetch Ground data');
             const data = await response.json();
             console.log(data);

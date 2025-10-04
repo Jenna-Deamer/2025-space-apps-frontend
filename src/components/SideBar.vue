@@ -137,8 +137,8 @@ const healthAdvice = computed(() => {
 watch(() => mapStore.selectedLocation, async (newLocation) => {
     if (newLocation) {
         console.log(newLocation);
-        // groundData.value = await airQualityService.getGroundData();
-        // tempoData.value = await airQualityService.getTempoData();
+        groundData.value = await airQualityService.getGroundData(newLocation.lng, newLocation.lat);
+        tempoData.value = await airQualityService.getTempoData();
 
         if (groundData.value?.coord) {
             stationCity.value = await airQualityService.reverseGeocode(groundData.value.coord.lat, groundData.value.coord.lon);
