@@ -13,7 +13,15 @@
                 </ion-toolbar>
             </ion-header>
 
-            <MapComponent />
+            <main>
+                <div class="map">
+                    <MapComponent />
+                </div>
+                <div class="sidebar">
+                    <SideBar />
+                </div>
+            </main>
+
         </ion-content>
     </ion-page>
 </template>
@@ -22,5 +30,22 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
 import MapComponent from '../components/MapComponent.vue';
 import HeaderComponent from '@/components/HeaderComponent.vue';
+import SideBar from '@/components/SideBar.vue';
 
 </script>
+
+<style scoped>
+main {
+    display: grid;
+    height: 100%;
+    grid-template-columns: 3fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
+}
+</style>
