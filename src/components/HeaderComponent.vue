@@ -45,7 +45,7 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     padding: .5em 1em;
-
+    border-bottom: #102136 3px solid;
 }
 
 input {
@@ -70,6 +70,6 @@ input {
     position: absolute;
     left: 0.5em;
     pointer-events: none;
-    color: var(--action-color); 
+    color: var(--action-color);
 }
 </style>
