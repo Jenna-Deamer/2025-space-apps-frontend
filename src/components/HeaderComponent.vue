@@ -11,15 +11,15 @@ import { onMounted, ref } from 'vue';
 const searchInput = ref<HTMLInputElement | null>(null);
 
 onMounted(() => {
-  if (window.google && window.google.maps && searchInput.value) {
-    const autocomplete = new window.google.maps.places.Autocomplete(searchInput.value, {
-      types: ['geocode'],
-    });
-    autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
-      console.log(place);
-    });
-  }
+    if (window.google && window.google.maps && searchInput.value) {
+        const autocomplete = new window.google.maps.places.Autocomplete(searchInput.value, {
+            types: ['geocode'],
+        });
+        autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            console.log(place);
+        });
+    }
 });
 
 </script>
@@ -28,5 +28,13 @@ onMounted(() => {
 .header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    padding: .5em 1em;
+}
+
+input {
+    height: 2em;
+    padding: 0.5em;
+    font-size: 1em;
 }
 </style>
