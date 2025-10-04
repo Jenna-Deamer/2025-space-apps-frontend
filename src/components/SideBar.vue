@@ -14,7 +14,7 @@
                     {{ groundData.list[0].main.aqi }} ({{ aqiCategory }})
                 </div>
                 <div v-else class="aqi-value">Data unavailable</div>
-                <div>Main pollutant: {{ mainPollutant }}</div>
+                <div><strong>Main pollutant: {{ mainPollutant }}</strong></div>
                 <div class="health-advice">{{ healthAdvice }}</div>
             </section>
 
@@ -39,7 +39,7 @@
                         {{ key.toUpperCase() }}: {{ value }} µg/m³ or ppb (units vary)
                     </div>
                     <div>AQI: {{ groundData.list[0].main.aqi }} ({{ aqiCategory }})</div>
-                    <div>Station: {{ groundData.coord.lat }}, {{ groundData.coord.lon }}</div>
+                    <div>Station: {{ stationCity }}</div>
                 </div>
                 <div v-else>Data unavailable</div>
             </section>
@@ -66,6 +66,7 @@ import { airQualityService } from "../services/AirQualityApiResponse";
 const mapStore = useMapStore();
 
 const groundData = ref(null);
+const stationCity = ref('');
 const tempoData = ref(null);
 
 // Placeholder for forecast (not fetched yet)
@@ -123,7 +124,7 @@ const mainPollutant = computed(() => {
 const healthAdvice = computed(() => {
     const category = aqiCategory.value;
     switch (category) {
-        case 'Good': return 'Air quality is good. Safe to go outside.';
+        case 'Good': return "Air quality is good, it's safe to go outside.";
         case 'Moderate': return 'Air quality is acceptable. Sensitive individuals should consider limiting prolonged outdoor exertion.';
         case 'Unhealthy for Sensitive Groups': return 'Members of sensitive groups may experience health effects. General public is not likely to be affected.';
         case 'Unhealthy': return 'Everyone may begin to experience health effects. Sensitive groups should avoid outdoor activities.';
@@ -139,6 +140,10 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
         console.log(newLocation);
         groundData.value = await airQualityService.getGroundData();
         tempoData.value = await airQualityService.getTempoData();
+
+        if (groundData.value?.coord) {
+            stationCity.value = await airQualityService.reverseGeocode(groundData.value.coord.lat, groundData.value.coord.lon);
+        }
     }
 });
 </script>

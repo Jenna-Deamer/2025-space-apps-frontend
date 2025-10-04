@@ -4,40 +4,40 @@ export interface TempoData {
     ai: number; // Aerosol Index
     pm: number; // Particulate matter in µg/m³
     o3: number; // Ozone in ppb
-    min: string; 
-    max: string; 
+    min: string;
+    max: string;
 }
 
 
 interface Coord {
-  lon: number;
-  lat: number;
+    lon: number;
+    lat: number;
 }
 
 interface Main {
-  aqi: number;
+    aqi: number;
 }
 
 interface Components {
-  co: number;
-  no: number;
-  no2: number;
-  o3: number;
-  so2: number;
-  pm2_5: number;
-  pm10: number;
-  nh3: number;
+    co: number;
+    no: number;
+    no2: number;
+    o3: number;
+    so2: number;
+    pm2_5: number;
+    pm10: number;
+    nh3: number;
 }
 
 interface AirPollutionItem {
-  main: Main;
-  components: Components;
-  dt: number;
+    main: Main;
+    components: Components;
+    dt: number;
 }
 
 interface GroundDataResponse {
-  coord: Coord;
-  list: AirPollutionItem[];
+    coord: Coord;
+    list: AirPollutionItem[];
 }
 
 export interface AirQualityApiResponse {
@@ -72,17 +72,30 @@ export const airQualityService = {
             return null;
         }
     },
+
     async getForecastData() {
-        try{
+        try {
             console.log('Fetching Forecast data...');
             const response = await fetch('');
             if (!response.ok) throw new Error('Failed to fetch Forecast data');
             console.log(response.json());
             return await response.json();
-        }catch (error) {
+        } catch (error) {
             console.error('Error fetching Forecast data:', error);
             return null;
         }
+    },
+    async reverseGeocode(lat, lon) {
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
+            const data = await response.json();
+            // Extract city name; fallback to display_name if city is not available
+            return data.address?.city || data.address?.town || data.address?.village || data.display_name || 'Unknown';
+        } catch (error) {
+            console.error('Reverse geocoding error:', error);
+            return 'Unknown';
+        }
     }
+
 
 }
