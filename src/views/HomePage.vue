@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import { IonContent, IonHeader, IonPage, IonToolbar } from '@ionic/vue';
 import MapComponent from '../components/MapComponent.vue';
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import SideBar from '@/components/SideBar.vue';
@@ -39,10 +39,10 @@ main {
     display: grid;
     height: 100%;
     grid-template-columns: 3fr 1fr;
-    gap: 1rem;
+    gap: .5rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 700px) {
     main {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto;
