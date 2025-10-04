@@ -1,6 +1,6 @@
 <template>
     <div class="map-container">
-        <div v-if="loading" class="loading-overlay">
+        <div v-if="mapStore.loading" class="loading-overlay">
             <div class="loading-content">
                 <div class="arrow-up">↑</div>
                 Please allow location access
@@ -14,8 +14,9 @@
 import { ref, onMounted } from 'vue';
 import "leaflet/dist/leaflet.css";
 import * as L from 'leaflet';
+import { useMapStore } from '../stores/MapStore';
 
-const loading = ref(true);
+const mapStore = useMapStore();
 const initialMap = ref(null);
 
 onMounted(() => {
@@ -28,7 +29,7 @@ onMounted(() => {
     }).addTo(initialMap.value);
 
     tileLayer.on('load', () => {
-        if (loading.value) {
+        if (mapStore.loading) {
             // Location might not be set yet, so do nothing here
             // The final loading state will be resolved in geolocation callbacks or fallback
         }
@@ -36,7 +37,7 @@ onMounted(() => {
 
     const loadWithFallback = () => {
         initialMap.value.setView([44.59232, -79.45835], 13);
-        loading.value = false;
+        mapStore.setMapLoading(false);
     };
 
     if (navigator.geolocation) {
@@ -47,7 +48,7 @@ onMounted(() => {
                 initialMap.value.setView([lat, lng], 13);
 
                 tileLayer.once('load', () => {
-                    loading.value = false;
+                    mapStore.setMapLoading(false);
                 });
             },
             (error) => {
