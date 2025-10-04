@@ -259,18 +259,21 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 
 .advanced-ground-data {
     margin-top: 0.5em;
-    padding-left: 0.75em;
+    padding: 0.5em 0.75em;
     border-radius: 4px;
     font-size: 0.96em;
     max-height: 0;
     opacity: 0;
     overflow: hidden;
     transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+    border-left: 3px solid var(--action-color);
+    background-color: var(--overlay-bg);
 }
 
 .advanced-ground-data.open {
     max-height: 200px;
     opacity: 1;
+    background-color: var(--overlay-bg);
 }
 
 .ground-data .toggle-button {
