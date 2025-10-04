@@ -27,12 +27,14 @@ export const useMapStore = defineStore('map', {
                         lat2,
                         lon1,
                         lon2
-                    }
+                    },
+                    timeout: 10000
                 });
                 const data = response.data;
 
                 console.log('Min NO2:', data.minNO2);
                 console.log('Max NO2:', data.maxNO2);
+                // console.log('Image bytes length:', data.imagePng?.length || 0);
 
                 this.tempoData = {
                     minNO2: data.minNO2,
@@ -43,6 +45,7 @@ export const useMapStore = defineStore('map', {
                 return this.tempoData;
             } catch (error) {
                 console.error("Error fetching tempo data:", error);
+                return null;
             }
         }
     }

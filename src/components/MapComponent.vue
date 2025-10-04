@@ -10,19 +10,23 @@
         <div v-if="mapStore.tempoData?.imageBytes" class="corner-image">
             <img :src="`data:image/png;base64,${mapStore.tempoData.imageBytes}`" alt="Tempo Data Visualization" />
         </div>
+        <ScaleBar v-if="mapStore.tempoData" :min="mapStore.tempoData.minNO2" :max="mapStore.tempoData.maxNO2" />
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, nextTick, onUnmounted } from 'vue';
 import "leaflet/dist/leaflet.css";
 import * as L from 'leaflet';
 import { useMapStore } from '../stores/MapStore';
+import ScaleBar from './ScaleBar.vue';
 
 const mapStore = useMapStore();
 const initialMap = ref(null);
 const tempoOverlay = ref(null);
 const currentBounds = ref(null);
+const currentBlobUrl = ref(null);
+const debounceTimer = ref(null);
 
 onMounted(() => {
     initialMap.value = L.map('map');
@@ -76,30 +80,33 @@ onMounted(() => {
         const southWest = bounds.getSouthWest(); // bottom-left corner
         const northEast = bounds.getNorthEast(); // top-right corner
 
-        const northWest = L.latLng(northEast.lat, southWest.lng); // top-left corner
-        const southEast = L.latLng(southWest.lat, northEast.lng); // bottom-right corner
-
-        console.log('top left: ', northWest);
-        console.log('top right: ', northEast);
-        console.log('bottom left: ', southWest);
-        console.log('bottom right: ', southEast);
-
-        // Store bounds and fetch new tempo data
+        // Store bounds and fetch new tempo data with debounce
         currentBounds.value = {
             lat1: southWest.lat,
             lat2: northEast.lat,
             lon1: southWest.lng,
             lon2: northEast.lng
         };
-        fetchTempoData();
+
+        // Clear existing timer
+        if (debounceTimer.value) {
+            clearTimeout(debounceTimer.value);
+        }
+
+        // Set new timer to fetch data after 500ms of no movement
+        debounceTimer.value = setTimeout(() => {
+            fetchTempoData();
+        }, 500);
     });
-
-    setTimeout(() => {
-        initialMap.value.invalidateSize();
-    }, 200);
-
-    // Initial fetch will be triggered by first moveend event
 });
+
+const forceResize = () => {
+    nextTick(() => {
+        if (initialMap.value) {
+            initialMap.value.invalidateSize();
+        }
+    });
+};
 
 async function fetchTempoData() {
     if (!currentBounds.value || !initialMap.value) return;
@@ -114,30 +121,42 @@ async function fetchTempoData() {
     const data = await mapStore.getTempoData(lat1, lat2, lon1, lon2);
 
     if (data && data.imageBytes && initialMap.value) {
-        // Convert byte array to base64 image URL
-        const base64Image = `data:image/png;base64,${data.imageBytes}`;
+        try {
+            // Convert base64 to blob URL (works better on Android)
+            const base64Image = `data:image/png;base64,${data.imageBytes}`;
+            const blurredBase64 = await applyGaussianBlur(base64Image);
 
-        // Apply Gaussian blur using canvas
-        const blurredBase64 = await applyGaussianBlur(base64Image);
+            // Convert to blob URL
+            const blobUrl = await base64ToBlob(blurredBase64);
 
-        // Use the same bounds that were sent to the backend
-        const tempoBounds = L.latLngBounds(
-            [lat2, lon1],  // top left (lat2, lon1)
-            [lat1, lon2]   // bottom right (lat1, lon2)
-        );
+            // Revoke previous blob URL to prevent memory leaks
+            if (currentBlobUrl.value) {
+                URL.revokeObjectURL(currentBlobUrl.value);
+            }
+            currentBlobUrl.value = blobUrl;
 
-        // Remove existing overlay if present
-        if (tempoOverlay.value) {
-            initialMap.value.removeLayer(tempoOverlay.value);
+            // Use the same bounds that were sent to the backend
+            const tempoBounds = L.latLngBounds(
+                [lat2, lon1],  // top left (lat2, lon1)
+                [lat1, lon2]   // bottom right (lat1, lon2)
+            );
+
+            // Remove existing overlay if present
+            if (tempoOverlay.value) {
+                initialMap.value.removeLayer(tempoOverlay.value);
+            }
+
+            // Add tempo image overlay with initial opacity 0
+            tempoOverlay.value = L.imageOverlay(blobUrl, tempoBounds, {
+                opacity: 0,
+                crossOrigin: 'anonymous' // Add CORS support
+            }).addTo(initialMap.value);
+
+            // Fade in new overlay
+            await fadeInOverlay(tempoOverlay.value);
+        } catch (error) {
+            console.error('Error creating overlay:', error);
         }
-
-        // Add tempo image overlay with initial opacity 0
-        tempoOverlay.value = L.imageOverlay(blurredBase64, tempoBounds, {
-            opacity: 0
-        }).addTo(initialMap.value);
-
-        // Fade in new overlay
-        await fadeInOverlay(tempoOverlay.value);
     }
 }
 
@@ -189,10 +208,53 @@ async function applyGaussianBlur(base64Image) {
     });
 }
 
+async function base64ToBlob(base64) {
+    return new Promise((resolve, reject) => {
+        try {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const blobUrl = URL.createObjectURL(blob);
+                        resolve(blobUrl);
+                    } else {
+                        reject(new Error('Failed to create blob'));
+                    }
+                }, 'image/png');
+            };
+            img.onerror = (error) => reject(error);
+            img.src = base64;
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
 watch(() => mapStore.selectedLocation, (newLocation) => {
     if (newLocation && initialMap.value) {
         const currentZoom = initialMap.value.getZoom();
         initialMap.value.setView([newLocation.lat, newLocation.lng], currentZoom);
+    }
+});
+
+defineExpose({
+    forceResize
+});
+
+// Cleanup on unmount
+onUnmounted(() => {
+    if (currentBlobUrl.value) {
+        URL.revokeObjectURL(currentBlobUrl.value);
+    }
+    if (debounceTimer.value) {
+        clearTimeout(debounceTimer.value);
     }
 });
 </script>

@@ -15,7 +15,7 @@
 
             <main>
                 <div class="map">
-                    <MapComponent />
+                    <MapComponent ref="mapComponentRef" />
                 </div>
                 <div class="sidebar">
                     <SideBar />
@@ -27,11 +27,19 @@
 </template>
 
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonToolbar } from '@ionic/vue';
+import { ref } from 'vue';
+import { IonContent, IonHeader, IonPage, IonToolbar, onIonViewDidEnter } from '@ionic/vue';
 import MapComponent from '../components/MapComponent.vue';
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import SideBar from '@/components/SideBar.vue';
 
+const mapComponentRef = ref<InstanceType<typeof MapComponent> | null>(null);
+
+onIonViewDidEnter(() => {
+    if (mapComponentRef.value) {
+        mapComponentRef.value.forceResize();
+    }
+});
 </script>
 
 <style scoped>
@@ -42,14 +50,13 @@ main {
     gap: .5rem;
     background-color: var(--primary-color);
     color: var(--text-color);
-        font-family: 'Roboto', sans-serif;
-
+    font-family: 'Roboto', sans-serif;
 }
 
 @media (max-width: 700px) {
     main {
         grid-template-columns: 1fr;
-        grid-template-rows: auto auto;
+        grid-template-rows: 45vh 1fr;
     }
 }
 </style>
