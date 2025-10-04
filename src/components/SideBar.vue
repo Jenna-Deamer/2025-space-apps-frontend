@@ -10,35 +10,45 @@
             <!-- Air Quality Overview Card -->
             <section class="card aqi-overview">
                 <h3>Air Quality</h3>
-                <div class="aqi-value" :class="aqiLevelClass">42 (Good)</div>
-                <div class="main-pollutant">Main pollutant: NO2</div>
-                <div class="health-advice">Air quality is good. Safe to go outside.</div>
+                <div v-if="groundData && groundData.list.length > 0" class="aqi-value" :class="aqiLevelClass">
+                    {{ groundData.list[0].main.aqi }} ({{ aqiCategory }})
+                </div>
+                <div v-else class="aqi-value">Data unavailable</div>
+                <div>Main pollutant: {{ mainPollutant }}</div>
+                <div class="health-advice">{{ healthAdvice }}</div>
             </section>
 
             <!-- TEMPO Data Card -->
             <section class="card tempo-data">
                 <h3>TEMPO Satellite Data</h3>
-                <div>Nitrogen dioxide (NO2): 14 ppb</div>
-                <div>Formaldehyde (CH2O): 5 ppb</div>
-                <div>Aerosol Index (AI): 1.2</div>
-                <div>Particulate matter (PM): 10 µg/m³</div>
-                <div>Ozone (O3): 30 ppb</div>
+                <div v-if="tempoData">
+                    <div>Nitrogen dioxide (NO2): {{ tempoData.no2 }} ppb</div>
+                    <div>Formaldehyde (CH2O): {{ tempoData.ch2o }} ppb</div>
+                    <div>Aerosol Index (AI): {{ tempoData.ai }}</div>
+                    <div>Particulate matter (PM): {{ tempoData.pm }} µg/m³</div>
+                    <div>Ozone (O3): {{ tempoData.o3 }} ppb</div>
+                </div>
+                <div v-else>Data unavailable</div>
             </section>
 
             <!-- Ground Data Card -->
             <section class="card ground-data">
                 <h3>Ground Station Data</h3>
-                <div>PM2.5: 12 µg/m³</div>
-                <div>AQI: 50 (Moderate)</div>
-                <div>Station: Barrie</div>
+                <div v-if="groundData && groundData.list.length > 0">
+                    <div>PM2.5: {{ groundData.list[0].components.pm2_5 }} µg/m³</div>
+                    <div>AQI: {{ groundData.list[0].main.aqi }} ({{ aqiCategory }})</div>
+                    <div>Station: {{ groundData.coord.lat }}, {{ groundData.coord.lon }}</div>
+                </div>
+                <div v-else>Data unavailable</div>
             </section>
 
             <!-- Forecast Card -->
             <section class="card forecast">
                 <h3>Air Quality Forecast</h3>
+                <!-- Placeholder: No forecast data fetched yet. Add API call and data binding here when available. -->
                 <div class="forecast-day" v-for="day in forecast" :key="day.date">
                     <div>{{ day.date }}</div>
-                    <div :class="day.aqiClass">{{ day.aqi }} ({{ day.category }})</div>
+                    <div :class="['aqi-color', day.aqiClass]">{{ day.aqi }} ({{ day.category }})</div>
                     <div>{{ day.advice }}</div>
                 </div>
             </section>
@@ -47,19 +57,81 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from "vue"
+import { ref, computed, watch } from "vue";
 import { useMapStore } from '../stores/MapStore';
-import {airQualityService} from "../services/AirQualityApiResponse";
+import { airQualityService } from "../services/AirQualityApiResponse";
 
 const mapStore = useMapStore();
 
-watch(() => mapStore.selectedLocation, (newLocation) => {
-    console.log(newLocation);
-    airQualityService.getGroundData();
-    airQualityService.getTempoData();
+// Reactive variables to store fetched data
+const groundData = ref(null);
+const tempoData = ref(null);
+
+// Placeholder for forecast (not fetched yet)
+const forecast = ref([
+    { date: '2023-10-01', aqi: 45, category: 'Good', aqiClass: 'good', advice: 'Enjoy outdoor activities.' },
+    { date: '2023-10-02', aqi: 55, category: 'Moderate', aqiClass: 'moderate', advice: 'Sensitive groups should limit prolonged outdoor exertion.' },
+    // Add more as needed
+]);
+
+// Computed: AQI category based on value (standard EPA breakpoints)
+const aqiCategory = computed(() => {
+    if (!groundData.value || !groundData.value.list.length) return 'Unknown';
+    const aqi = groundData.value.list[0].main.aqi;
+    if (aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
+    if (aqi <= 200) return 'Unhealthy';
+    if (aqi <= 300) return 'Very Unhealthy';
+    return 'Hazardous';
 });
 
+// Computed: CSS class for AQI level
+const aqiLevelClass = computed(() => {
+    const category = aqiCategory.value.toLowerCase().replace(/\s+/g, '-');
+    return `aqi-value ${category}`;
+});
 
+// Computed: Main pollutant (highest concentration among key components)
+const mainPollutant = computed(() => {
+    if (!groundData.value || !groundData.value.list.length) return 'Unknown';
+    const components = groundData.value.list[0].components;
+    const pollutants = {
+        'CO': components.co,
+        'NO': components.no,
+        'NO2': components.no2,
+        'O3': components.o3,
+        'SO2': components.so2,
+        'PM2.5': components.pm2_5,
+        'PM10': components.pm10,
+        'NH3': components.nh3,
+    };
+    const maxPollutant = Object.keys(pollutants).reduce((a, b) => pollutants[a] > pollutants[b] ? a : b);
+    return maxPollutant;
+});
+
+// Computed: Health advice based on AQI category
+const healthAdvice = computed(() => {
+    const category = aqiCategory.value;
+    switch (category) {
+        case 'Good': return 'Air quality is good. Safe to go outside.';
+        case 'Moderate': return 'Air quality is acceptable. Sensitive individuals should consider limiting prolonged outdoor exertion.';
+        case 'Unhealthy for Sensitive Groups': return 'Members of sensitive groups may experience health effects. General public is not likely to be affected.';
+        case 'Unhealthy': return 'Everyone may begin to experience health effects. Sensitive groups should avoid outdoor activities.';
+        case 'Very Unhealthy': return 'Health alert: Everyone may experience more serious health effects. Avoid outdoor activities.';
+        case 'Hazardous': return 'Health warnings of emergency conditions. Entire population is more likely to be affected.';
+        default: return 'Data unavailable.';
+    }
+});
+
+// Watch for location changes and fetch data
+watch(() => mapStore.selectedLocation, async (newLocation) => {
+    if (newLocation) {
+        console.log(newLocation);
+        groundData.value = await airQualityService.getGroundData();
+        tempoData.value = await airQualityService.getTempoData();
+    }
+});
 </script>
 
 <style scoped>
@@ -81,19 +153,59 @@ watch(() => mapStore.selectedLocation, (newLocation) => {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.aqi-value.good {
-    color: #4caf50;
+.aqi-value,
+.aqi-color{
     font-weight: 700;
+}
+
+
+.aqi-value.good {
+    color: #0ebb0e; 
 }
 
 .aqi-value.moderate {
-    color: #ff9800;
-    font-weight: 700;
+    color: #e0b730; 
+}
+
+.aqi-value.unhealthy-for-sensitive-groups {
+    color: #ff7e00; 
 }
 
 .aqi-value.unhealthy {
-    color: #f44336;
-    font-weight: 700;
+    color: #ff0000;
+}
+
+.aqi-value.very-unhealthy {
+    color: #8f3f97; 
+}
+
+.aqi-value.hazardous {
+    color: #7e0023; 
+}
+
+/* Standalone classes for forecast days (matching day.aqiClass) */
+.good {
+    color: #0ebb0e; 
+}
+
+.moderate {
+    color: #e0b730; 
+}
+
+.unhealthy-for-sensitive-groups {
+    color: #ff7e00;
+}
+
+.unhealthy {
+    color: #ff0000;
+}
+
+.very-unhealthy {
+    color: #8f3f97;
+}
+
+.hazardous {
+    color: #7e0023;
 }
 
 .forecast-day {
@@ -103,14 +215,6 @@ watch(() => mapStore.selectedLocation, (newLocation) => {
 
 .forecast-day:first-child {
     border-top: none;
-}
-
-.moderate {
-    color: #ff9800;
-}
-
-.unhealthy {
-    color: #f44336;
 }
 
 .loading-state {
