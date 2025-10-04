@@ -173,11 +173,11 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 <style scoped>
 .sidebar-content {
     padding: 0.5rem;
-    height: 100%;
+    height: 100vh;          
+    max-height: 100vh;     
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    overflow-y: auto;
     font-family: 'Roboto', sans-serif;
 
 }
