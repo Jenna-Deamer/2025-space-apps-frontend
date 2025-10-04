@@ -8,7 +8,6 @@ export interface TempoData {
     max: string;
 }
 
-
 interface Coord {
     lon: number;
     lat: number;
@@ -47,12 +46,42 @@ export interface AirQualityApiResponse {
 
 export const airQualityService = {
     async getGroundData(): Promise<GroundDataResponse | null> {
+        const CACHE_KEY = 'groundData_cache';
+
+        // Checking if we have cached data
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+            const { data, expiresAt } = JSON.parse(cached);
+            const now = new Date().getTime();
+
+            // Returning cached data if not expired
+            if (now < expiresAt) {
+                console.log('Returning cached Ground data');
+                return data;
+            }
+        }
+
         try {
             console.log('Fetching Ground data...');
             const response = await fetch('http://localhost:8080/api/ground-based-air-quality/retrieve');
             if (!response.ok) throw new Error('Failed to fetch Ground data');
             const data = await response.json();
             console.log(data);
+
+            // Calculating expiration time (next hour at :00)
+            const now = new Date();
+            const expiresAt = new Date(now);
+            expiresAt.setHours(expiresAt.getHours() + 1);
+            expiresAt.setMinutes(0);
+            expiresAt.setSeconds(0);
+            expiresAt.setMilliseconds(0);
+
+            // Saving to localStorage
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+                data,
+                expiresAt: expiresAt.getTime()
+            }));
+
             return data;
         } catch (error) {
             console.error('Error fetching Ground data:', error);
@@ -65,8 +94,9 @@ export const airQualityService = {
             console.log('Fetching TEMPO data...');
             const response = await fetch('http://localhost:8080/api/level-three/retrieve');
             if (!response.ok) throw new Error('Failed to fetch Tempo data');
-            console.log(response.json());
-            return await response.json();
+            const data = await response.json();
+            console.log(data);
+            return data;
         } catch (error) {
             console.error('Error fetching TEMPO data:', error);
             return null;
@@ -85,7 +115,7 @@ export const airQualityService = {
             return null;
         }
     },
-    async reverseGeocode(lat, lon) {
+    async reverseGeocode(lat: number, lon: number) {
         try {
             const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
             const data = await response.json();
