@@ -37,6 +37,7 @@ onMounted(() => {
 
     const loadWithFallback = () => {
         initialMap.value.setView([44.59232, -79.45835], 13);
+        mapStore.setSelectedLocation({ lat: 44.59232, lng: -79.45835 }); // set default loc
         mapStore.setMapLoading(false);
     };
 
@@ -46,6 +47,7 @@ onMounted(() => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
                 initialMap.value.setView([lat, lng], 13);
+                mapStore.setSelectedLocation({lat, lng}) // set loc to trigger fetch
 
                 tileLayer.once('load', () => {
                     mapStore.setMapLoading(false);
