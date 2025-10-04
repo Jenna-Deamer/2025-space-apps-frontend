@@ -71,5 +71,18 @@ export const airQualityService = {
             console.error('Error fetching TEMPO data:', error);
             return null;
         }
+    },
+    async getForecastData() {
+        try{
+            console.log('Fetching Forecast data...');
+            const response = await fetch('');
+            if (!response.ok) throw new Error('Failed to fetch Forecast data');
+            console.log(response.json());
+            return await response.json();
+        }catch (error) {
+            console.error('Error fetching Forecast data:', error);
+            return null;
+        }
     }
+
 }

@@ -35,7 +35,9 @@
             <section class="card ground-data">
                 <h3>Ground Station Data</h3>
                 <div v-if="groundData && groundData.list.length > 0">
-                    <div>PM2.5: {{ groundData.list[0].components.pm2_5 }} µg/m³</div>
+                    <div v-for="(value, key) in groundData.list[0].components" :key="key">
+                        {{ key.toUpperCase() }}: {{ value }} µg/m³ or ppb (units vary)
+                    </div>
                     <div>AQI: {{ groundData.list[0].main.aqi }} ({{ aqiCategory }})</div>
                     <div>Station: {{ groundData.coord.lat }}, {{ groundData.coord.lon }}</div>
                 </div>
@@ -56,14 +58,13 @@
     </aside>
 </template>
 
-<script setup lang="ts">
+<script setup lang="js">
 import { ref, computed, watch } from "vue";
 import { useMapStore } from '../stores/MapStore';
 import { airQualityService } from "../services/AirQualityApiResponse";
 
 const mapStore = useMapStore();
 
-// Reactive variables to store fetched data
 const groundData = ref(null);
 const tempoData = ref(null);
 
@@ -78,12 +79,20 @@ const forecast = ref([
 const aqiCategory = computed(() => {
     if (!groundData.value || !groundData.value.list.length) return 'Unknown';
     const aqi = groundData.value.list[0].main.aqi;
-    if (aqi <= 50) return 'Good';
-    if (aqi <= 100) return 'Moderate';
-    if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
-    if (aqi <= 200) return 'Unhealthy';
-    if (aqi <= 300) return 'Very Unhealthy';
-    return 'Hazardous';
+    switch (true) {
+        case aqi <= 50:
+            return 'Good';
+        case aqi <= 100:
+            return 'Moderate';
+        case aqi <= 150:
+            return 'Unhealthy for Sensitive Groups';
+        case aqi <= 200:
+            return 'Unhealthy';
+        case aqi <= 300:
+            return 'Very Unhealthy';
+        default:
+            return 'Hazardous';
+    }
 });
 
 // Computed: CSS class for AQI level
@@ -154,21 +163,21 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 }
 
 .aqi-value,
-.aqi-color{
+.aqi-color {
     font-weight: 700;
 }
 
 
 .aqi-value.good {
-    color: #0ebb0e; 
+    color: #0ebb0e;
 }
 
 .aqi-value.moderate {
-    color: #e0b730; 
+    color: #e0b730;
 }
 
 .aqi-value.unhealthy-for-sensitive-groups {
-    color: #ff7e00; 
+    color: #ff7e00;
 }
 
 .aqi-value.unhealthy {
@@ -176,20 +185,20 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 }
 
 .aqi-value.very-unhealthy {
-    color: #8f3f97; 
+    color: #8f3f97;
 }
 
 .aqi-value.hazardous {
-    color: #7e0023; 
+    color: #7e0023;
 }
 
 /* Standalone classes for forecast days (matching day.aqiClass) */
 .good {
-    color: #0ebb0e; 
+    color: #0ebb0e;
 }
 
 .moderate {
-    color: #e0b730; 
+    color: #e0b730;
 }
 
 .unhealthy-for-sensitive-groups {
