@@ -6,9 +6,10 @@
         </div>
 
         <template v-else>
+            <h2>Overview</h2>
             <!-- Air Quality Overview Card -->
             <section class="card aqi-overview">
-                <h2>Air Quality</h2>
+                <h3>Air Quality</h3>
                 <div class="aqi-value" :class="aqiLevelClass">42 (Good)</div>
                 <div class="main-pollutant">Main pollutant: NO2</div>
                 <div class="health-advice">Air quality is good. Safe to go outside.</div>
@@ -16,23 +17,25 @@
 
             <!-- TEMPO Data Card -->
             <section class="card tempo-data">
-                <h2>TEMPO Satellite Data</h2>
-                <div>NO2: 14 ppb</div>
-                <div>Ozone: 30 ppb</div>
-                <div>Aerosol Index: 1.2</div>
+                <h3>TEMPO Satellite Data (NO₂)</h3>
+                <div>Nitrogen dioxide (NO2): 14 ppb</div>
+                <div>Formaldehyde (CH2O): 5 ppb</div>
+                <div>Aerosol Index (AI): 1.2</div>
+                <div>Particulate matter (PM): 10 µg/m³</div>
+                <div>Ozone (O3): 30 ppb</div>
             </section>
 
             <!-- Ground Data Card -->
             <section class="card ground-data">
-                <h2>Ground Station Data</h2>
+                <h3>Ground Station Data</h3>
                 <div>PM2.5: 12 µg/m³</div>
                 <div>AQI: 50 (Moderate)</div>
-                <div>Station: Orillia Campus</div>
+                <div>Station: Barrie</div>
             </section>
 
             <!-- Forecast Card -->
             <section class="card forecast">
-                <h2>Air Quality Forecast</h2>
+                <h3>Air Quality Forecast</h3>
                 <div class="forecast-day" v-for="day in forecast" :key="day.date">
                     <div>{{ day.date }}</div>
                     <div :class="day.aqiClass">{{ day.aqi }} ({{ day.category }})</div>
