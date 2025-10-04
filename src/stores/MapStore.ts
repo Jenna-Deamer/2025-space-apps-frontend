@@ -19,9 +19,16 @@ export const useMapStore = defineStore('map', {
         setSelectedLocation(location: { lat: number, lng: number } | null) {
             this.selectedLocation = location
         },
-        async getTempoData() {
+        async getTempoData(lat1: number, lat2: number, lon1: number, lon2: number) {
             try {
-                const response = await axios.get('http://localhost:8080/api/level-three/retrieve');
+                const response = await axios.get('http://localhost:8080/api/level-three/retrieve', {
+                    params: {
+                        lat1,
+                        lat2,
+                        lon1,
+                        lon2
+                    }
+                });
                 const data = response.data;
 
                 console.log('Min NO2:', data.minNO2);
