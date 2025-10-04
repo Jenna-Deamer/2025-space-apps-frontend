@@ -7,8 +7,10 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useMapStore } from '../stores/MapStore';
 
 const searchInput = ref<HTMLInputElement | null>(null);
+const mapStore = useMapStore();
 
 onMounted(() => {
     if (window.google && window.google.maps && searchInput.value) {
@@ -17,7 +19,11 @@ onMounted(() => {
         });
         autocomplete.addListener('place_changed', () => {
             const place = autocomplete.getPlace();
-            console.log(place);
+            if (place.geometry && place.geometry.location) {
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+                mapStore.setSelectedLocation({ lat, lng });
+            }
         });
     }
 });

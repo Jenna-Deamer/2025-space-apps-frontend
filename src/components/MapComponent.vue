@@ -11,7 +11,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import "leaflet/dist/leaflet.css";
 import * as L from 'leaflet';
 import { useMapStore } from '../stores/MapStore';
@@ -81,6 +81,13 @@ onMounted(() => {
     setTimeout(() => {
         initialMap.value.invalidateSize();
     }, 200);
+});
+
+watch(() => mapStore.selectedLocation, (newLocation) => {
+    if (newLocation && initialMap.value) {
+        const currentZoom = initialMap.value.getZoom();
+        initialMap.value.setView([newLocation.lat, newLocation.lng], currentZoom);
+    }
 });
 </script>
 
