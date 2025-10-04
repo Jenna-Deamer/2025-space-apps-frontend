@@ -22,6 +22,7 @@ import { useMapStore } from '../stores/MapStore';
 const mapStore = useMapStore();
 const initialMap = ref(null);
 const tempoOverlay = ref(null);
+const currentBounds = ref(null);
 
 onMounted(() => {
     initialMap.value = L.map('map');
@@ -82,27 +83,38 @@ onMounted(() => {
         console.log('top right: ', northEast);
         console.log('bottom left: ', southWest);
         console.log('bottom right: ', southEast);
+
+        // Store bounds and fetch new tempo data
+        currentBounds.value = {
+            lat1: southWest.lat,
+            lat2: northEast.lat,
+            lon1: southWest.lng,
+            lon2: northEast.lng
+        };
+        fetchTempoData();
     });
 
     setTimeout(() => {
         initialMap.value.invalidateSize();
     }, 200);
 
-    // Fetch and display tempo data
-    fetchTempoData();
+    // Initial fetch will be triggered by first moveend event
 });
 
 async function fetchTempoData() {
-    const data = await mapStore.getTempoData();
+    if (!currentBounds.value || !initialMap.value) return;
+
+    const { lat1, lat2, lon1, lon2 } = currentBounds.value;
+    const data = await mapStore.getTempoData(lat1, lat2, lon1, lon2);
 
     if (data && data.imageBytes && initialMap.value) {
         // Convert byte array to base64 image URL
         const base64Image = `data:image/png;base64,${data.imageBytes}`;
 
-        // Define bounds based on the hardcoded lat/longs from the backend
+        // Use the same bounds that were sent to the backend
         const tempoBounds = L.latLngBounds(
-            [45, -90],  // top left (lat2, lon1)
-            [30, -75]   // bottom right (lat1, lon2)
+            [lat2, lon1],  // top left (lat2, lon1)
+            [lat1, lon2]   // bottom right (lat1, lon2)
         );
 
         // Remove existing overlay if present
