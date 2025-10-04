@@ -145,13 +145,13 @@ watch(() => mapStore.selectedLocation, (newLocation) => {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--secondary-color);
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 1.5rem;
     font-weight: bold;
-    color: #333;
+    color: var(--text-color);
 }
 
 .loading-content {
@@ -163,7 +163,7 @@ watch(() => mapStore.selectedLocation, (newLocation) => {
 
 .arrow-up {
     font-size: 2rem;
-    color: #007bff;
+    color: var(--action-color);
     animation: bounce 1s infinite;
 }
 

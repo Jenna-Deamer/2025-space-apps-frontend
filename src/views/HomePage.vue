@@ -40,6 +40,10 @@ main {
     height: 100%;
     grid-template-columns: 3fr 1fr;
     gap: .5rem;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+        font-family: 'Roboto', sans-serif;
+
 }
 
 @media (max-width: 700px) {
