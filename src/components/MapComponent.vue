@@ -105,11 +105,20 @@ async function fetchTempoData() {
     if (!currentBounds.value || !initialMap.value) return;
 
     const { lat1, lat2, lon1, lon2 } = currentBounds.value;
+
+    // Fade out existing overlay
+    if (tempoOverlay.value) {
+        await fadeOutOverlay(tempoOverlay.value);
+    }
+
     const data = await mapStore.getTempoData(lat1, lat2, lon1, lon2);
 
     if (data && data.imageBytes && initialMap.value) {
         // Convert byte array to base64 image URL
         const base64Image = `data:image/png;base64,${data.imageBytes}`;
+
+        // Apply Gaussian blur using canvas
+        const blurredBase64 = await applyGaussianBlur(base64Image);
 
         // Use the same bounds that were sent to the backend
         const tempoBounds = L.latLngBounds(
@@ -122,11 +131,62 @@ async function fetchTempoData() {
             initialMap.value.removeLayer(tempoOverlay.value);
         }
 
-        // Add tempo image overlay
-        tempoOverlay.value = L.imageOverlay(base64Image, tempoBounds, {
-            opacity: 1
+        // Add tempo image overlay with initial opacity 0
+        tempoOverlay.value = L.imageOverlay(blurredBase64, tempoBounds, {
+            opacity: 0
         }).addTo(initialMap.value);
+
+        // Fade in new overlay
+        await fadeInOverlay(tempoOverlay.value);
     }
+}
+
+function fadeOutOverlay(overlay) {
+    return new Promise((resolve) => {
+        let opacity = 1;
+        const fadeInterval = setInterval(() => {
+            opacity -= 0.1;
+            if (opacity <= 0) {
+                overlay.setOpacity(0);
+                clearInterval(fadeInterval);
+                resolve();
+            } else {
+                overlay.setOpacity(opacity);
+            }
+        }, 30);
+    });
+}
+
+function fadeInOverlay(overlay) {
+    return new Promise((resolve) => {
+        let opacity = 0;
+        const fadeInterval = setInterval(() => {
+            opacity += 0.1;
+            if (opacity >= 1) {
+                overlay.setOpacity(1);
+                clearInterval(fadeInterval);
+                resolve();
+            } else {
+                overlay.setOpacity(opacity);
+            }
+        }, 30);
+    });
+}
+
+async function applyGaussianBlur(base64Image) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.filter = 'blur(0.3px)';
+            ctx.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL('image/png'));
+        };
+        img.src = base64Image;
+    });
 }
 
 watch(() => mapStore.selectedLocation, (newLocation) => {
