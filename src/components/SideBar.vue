@@ -173,20 +173,23 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 <style scoped>
 .sidebar-content {
     padding: 0.5rem;
-    height: 100vh;          
-    max-height: 100vh;     
+    height: 100vh;
+    max-height: 100vh;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    /* overflow-y: auto;     */
     font-family: 'Roboto', sans-serif;
 
 }
 
 .card {
-    background-color: var(--secondary-color);
+    background-color: var(--overlay-bg);
+    border-left: 3px solid var(--action-color);
+    background-color: var(--overlay-bg);
     padding: 0.75rem;
     border-radius: 6px;
-    box-shadow: 0 1px 3px var(--overlay-bg);
+    box-shadow: 0 1px 3px var(--black);
 }
 
 .aqi-value,
@@ -232,15 +235,12 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 }
 
 .forecast-day:first-child {
-    border-top: none;
+    border:none;
 }
 
 .main-pollutants-ground-data {
     padding: 0.5em 0.75em;
     margin-bottom: 1em;
-    border-left: 3px solid var(--action-color);
-    border-radius: 4px;
-    background-color: var(--overlay-bg);
 }
 
 .main-pollutants-ground-data p {
@@ -249,16 +249,12 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 }
 
 .other-ground-data {
-    border-left: 3px solid var(--action-color);
-    background-color: var(--overlay-bg);
     border-radius: 4px;
     padding: 0.4em 0.75em;
-    margin-bottom: 1em;
     font-size: 0.97em;
 }
 
 .advanced-ground-data {
-    margin-top: 0.5em;
     padding: 0.5em 0.75em;
     border-radius: 4px;
     font-size: 0.96em;
@@ -266,14 +262,11 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
     opacity: 0;
     overflow: hidden;
     transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
-    border-left: 3px solid var(--action-color);
-    background-color: var(--overlay-bg);
 }
 
 .advanced-ground-data.open {
     max-height: 200px;
     opacity: 1;
-    background-color: var(--overlay-bg);
 }
 
 .ground-data .toggle-button {
@@ -329,5 +322,13 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
     100% {
         transform: rotate(360deg);
     }
+}
+
+.aqi-overview {
+    border-left: 3px solid var(--action-color);
+    background-color: var(--overlay-bg);
+    border-radius: 4px;
+    padding: 0.5em 0.75em;
+    margin-bottom: 1em;
 }
 </style>

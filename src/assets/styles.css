@@ -43,7 +43,7 @@ ion-content::part(background) {
     background: var(--primary-color) !important;
 }
 p {
-    line-height: 1.2;
+    line-height: 1.4;
     margin: 0.25em 0;
 }
 
