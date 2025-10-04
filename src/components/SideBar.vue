@@ -13,7 +13,7 @@
                 <div v-if="groundData && groundData.list.length > 0" class="aqi-value" :class="aqiLevelClass">
                     {{ groundData.list[0].main.aqi }} ({{ aqiCategory }})
                 </div>
-                <div v-else class="aqi-value">Data unavailable</div>
+                <div v-else>Data unavailable</div>
                 <div><strong>Main pollutant: {{ mainPollutant }}</strong></div>
                 <div class="health-advice">{{ healthAdvice }}</div>
             </section>
@@ -71,9 +71,8 @@ const tempoData = ref(null);
 
 // Placeholder for forecast (not fetched yet)
 const forecast = ref([
-    { date: '2023-10-01', aqi: 45, category: 'Good', aqiClass: 'good', advice: 'Enjoy outdoor activities.' },
-    { date: '2023-10-02', aqi: 55, category: 'Moderate', aqiClass: 'moderate', advice: 'Sensitive groups should limit prolonged outdoor exertion.' },
-    // Add more as needed
+    { date: '2025-10-05', aqi: 45, category: 'Good', aqiClass: 'good', advice: 'Enjoy outdoor activities.' },
+    { date: '2025-10-06', aqi: 55, category: 'Moderate', aqiClass: 'moderate', advice: 'Sensitive groups should limit prolonged outdoor exertion.' },
 ]);
 
 // Computed: AQI category based on value (standard EPA breakpoints)
@@ -138,8 +137,8 @@ const healthAdvice = computed(() => {
 watch(() => mapStore.selectedLocation, async (newLocation) => {
     if (newLocation) {
         console.log(newLocation);
-        groundData.value = await airQualityService.getGroundData();
-        tempoData.value = await airQualityService.getTempoData();
+        // groundData.value = await airQualityService.getGroundData();
+        // tempoData.value = await airQualityService.getTempoData();
 
         if (groundData.value?.coord) {
             stationCity.value = await airQualityService.reverseGeocode(groundData.value.coord.lat, groundData.value.coord.lon);
@@ -150,18 +149,18 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 
 <style scoped>
 .sidebar-content {
-    background-color: #f0f0f0;
     padding: 0.5rem;
     height: 100%;
-    color: #000;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     overflow-y: auto;
+    font-family: 'Roboto', sans-serif;
+
 }
 
 .card {
-    background: white;
+    background-color: var(--secondary-color);
     padding: 0.75rem;
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -173,57 +172,39 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 }
 
 
-.aqi-value.good {
-    color: #0ebb0e;
-}
-
-.aqi-value.moderate {
-    color: #e0b730;
-}
-
-.aqi-value.unhealthy-for-sensitive-groups {
-    color: #ff7e00;
-}
-
-.aqi-value.unhealthy {
-    color: #ff0000;
-}
-
-.aqi-value.very-unhealthy {
-    color: #8f3f97;
-}
-
-.aqi-value.hazardous {
-    color: #7e0023;
-}
-
-/* Standalone classes for forecast days (matching day.aqiClass) */
+.aqi-value.good,
 .good {
-    color: #0ebb0e;
+    color: var(--aqi-good);
 }
 
+.aqi-value.moderate,
 .moderate {
-    color: #e0b730;
+    color: var(--aqi-moderate);
 }
 
+.aqi-value.unhealthy-for-sensitive-groups,
 .unhealthy-for-sensitive-groups {
-    color: #ff7e00;
+    color: var(--aqi-unhealthy-sensitive);
 }
 
+.aqi-value.unhealthy,
 .unhealthy {
-    color: #ff0000;
+    color: var(--aqi-unhealthy);
 }
 
+.aqi-value.very-unhealthy,
 .very-unhealthy {
-    color: #8f3f97;
+    color: var(--aqi-very-unhealthy);
 }
 
+.aqi-value.hazardous,
 .hazardous {
-    color: #7e0023;
+    color: var(--aqi-hazardous);
 }
+
 
 .forecast-day {
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--text-color);
     padding: 0.5rem 0;
 }
 
@@ -238,14 +219,14 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
     justify-content: center;
     height: 200px;
     gap: 1rem;
-    color: #666;
+    color: var(--light-text-color);
 }
 
 .loading-spinner {
     width: 40px;
     height: 40px;
-    border: 4px solid #f0f0f0;
-    border-top: 4px solid #007bff;
+    border: 4px solid var(--text-color);;
+    border-top: 4px solid var(--action-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }

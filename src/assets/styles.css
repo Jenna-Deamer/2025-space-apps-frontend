@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
+
+:root {
+    --primary-color: rgba(7, 16, 40, 1);
+    --secondary-color: rgba(19, 37, 58, 0.8);
+    --action-color: rgba(237, 126, 66, 1);
+    --action-hover-color: rgba(241, 112, 42, 1);
+    --text-color: rgba(231, 216, 216, 1);
+    --border-color: rgba(19, 37, 58, 1);
+    --light-text-color: rgb(171, 173, 175);
+
+    /* AQI levels */
+    --aqi-good: rgba(14, 187, 14, 1);
+    --aqi-moderate: rgba(224, 183, 48, 1);
+    --aqi-unhealthy-sensitive: rgba(255, 126, 0, 1);
+    --aqi-unhealthy: rgba(255, 0, 0, 1);
+    --aqi-very-unhealthy: rgba(143, 63, 151, 1);
+    --aqi-hazardous: rgba(126, 0, 35, 1);
+}
+
+ion-header {
+    box-shadow: none !important;
+}
