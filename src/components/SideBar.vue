@@ -17,7 +17,7 @@
 
             <!-- TEMPO Data Card -->
             <section class="card tempo-data">
-                <h3>TEMPO Satellite Data (NO₂)</h3>
+                <h3>TEMPO Satellite Data</h3>
                 <div>Nitrogen dioxide (NO2): 14 ppb</div>
                 <div>Formaldehyde (CH2O): 5 ppb</div>
                 <div>Aerosol Index (AI): 1.2</div>
@@ -46,24 +46,20 @@
     </aside>
 </template>
 
-<script>
+<script setup lang="ts">
+import { watch } from "vue"
 import { useMapStore } from '../stores/MapStore';
+import {airQualityService} from "../services/AirQualityApiResponse";
 
-export default {
-    setup() {
-        const mapStore = useMapStore();
-        return { mapStore };
-    },
-    data() {
-        return {
-            aqiLevelClass: 'good',
-            forecast: [
-                { date: 'Oct 5', aqi: 55, category: 'Moderate', aqiClass: 'moderate', advice: 'Limit prolonged outdoor time' },
-                { date: 'Oct 6', aqi: 70, category: 'Unhealthy for Sensitive Groups', aqiClass: 'unhealthy', advice: 'Wear a mask outdoors' },
-            ],
-        };
-    },
-};
+const mapStore = useMapStore();
+
+watch(() => mapStore.selectedLocation, (newLocation) => {
+    console.log(newLocation);
+    airQualityService.getGroundData();
+    airQualityService.getTempoData();
+});
+
+
 </script>
 
 <style scoped>
