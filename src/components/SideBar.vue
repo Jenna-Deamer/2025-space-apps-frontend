@@ -10,48 +10,66 @@
             <!-- Air Quality Overview Card -->
             <section class="card aqi-overview">
                 <h3>Air Quality</h3>
-                <div v-if="groundData && groundData.list.length > 0" class="aqi-value" :class="aqiLevelClass">
+                <p v-if="groundData && groundData.list.length > 0" class="aqi-value" :class="aqiLevelClass">
                     {{ groundData.list[0].main.aqi }} ({{ aqiCategory }})
-                </div>
-                <div v-else>Data unavailable</div>
-                <div><strong>Main pollutant: {{ mainPollutant }}</strong></div>
-                <div class="health-advice">{{ healthAdvice }}</div>
+                </p>
+                <p v-else>Data unavailable</p>
+                <p><strong>Main pollutant: {{ mainPollutant }}</strong></p>
+                <p class="health-advice">{{ healthAdvice }}</p>
             </section>
 
             <!-- TEMPO Data Card -->
             <section class="card tempo-data">
                 <h3>TEMPO Satellite Data</h3>
-                <div v-if="tempoData">
-                    <div>Nitrogen dioxide (NO2): {{ tempoData.no2 }} ppb</div>
-                    <div>Formaldehyde (CH2O): {{ tempoData.ch2o }} ppb</div>
-                    <div>Aerosol Index (AI): {{ tempoData.ai }}</div>
-                    <div>Particulate matter (PM): {{ tempoData.pm }} µg/m³</div>
-                    <div>Ozone (O3): {{ tempoData.o3 }} ppb</div>
-                </div>
-                <div v-else>Data unavailable</div>
+                <template v-if="tempoData">
+                    <p>Nitrogen dioxide (NO2): {{ tempoData.no2 }} ppb</p>
+                    <p>Formaldehyde (CH2O): {{ tempoData.ch2o }} ppb</p>
+                    <p>Aerosol Index (AI): {{ tempoData.ai }}</p>
+                    <p>Particulate matter (PM): {{ tempoData.pm }} µg/m³</p>
+                    <p>Ozone (O3): {{ tempoData.o3 }} ppb</p>
+                </template>
+                <p v-else>Data unavailable</p>
             </section>
 
             <!-- Ground Data Card -->
             <section class="card ground-data">
                 <h3>Ground Station Data</h3>
-                <div v-if="groundData && groundData.list.length > 0">
-                    <div v-for="(value, key) in groundData.list[0].components" :key="key">
-                        {{ key.toUpperCase() }}: {{ value }} µg/m³ or ppb (units vary)
+                <template v-if="groundData && groundData.list.length > 0">
+                    <div>
+                        <div class="main-pollutants-ground-data">
+                            <p>PM2.5: {{ groundData.list[0].components.pm2_5 }} µg/m³</p>
+                            <p>PM10: {{ groundData.list[0].components.pm10 }} µg/m³</p>
+                            <p>CO: {{ groundData.list[0].components.co }} µg/m³</p>
+                            <p>O3: {{ groundData.list[0].components.o3 }} µg/m³</p>
+                        </div>
+                        <div class="other-ground-data">
+                            <p>Station: {{ stationCity }}</p>
+                            <p>AQI: {{ groundData.list[0].main.aqi }} ({{ aqiCategory }})</p>
+                        </div>
+
                     </div>
-                    <div>AQI: {{ groundData.list[0].main.aqi }} ({{ aqiCategory }})</div>
-                    <div>Station: {{ stationCity }}</div>
-                </div>
-                <div v-else>Data unavailable</div>
+                    <div>
+                        <button @click="toggleAdvanced" class="toggle-button">
+                            {{ isAdvancedOpen ? '▲' : '▼' }} Advanced Data
+                        </button>
+                        <div class="advanced-ground-data" :class="{ open: isAdvancedOpen }">
+                            <p>NO: {{ groundData.list[0].components.no }} µg/m³</p>
+                            <p>NO2: {{ groundData.list[0].components.no2 }} µg/m³</p>
+                            <p>SO2: {{ groundData.list[0].components.so2 }} µg/m³</p>
+                            <p>NH3: {{ groundData.list[0].components.nh3 }} µg/m³</p>
+                        </div>
+                    </div>
+                </template>
+                <p v-else>Data unavailable</p>
             </section>
 
             <!-- Forecast Card -->
             <section class="card forecast">
                 <h3>Air Quality Forecast</h3>
-                <!-- Placeholder: No forecast data fetched yet. Add API call and data binding here when available. -->
                 <div class="forecast-day" v-for="day in forecast" :key="day.date">
-                    <div>{{ day.date }}</div>
-                    <div :class="['aqi-color', day.aqiClass]">{{ day.aqi }} ({{ day.category }})</div>
-                    <div>{{ day.advice }}</div>
+                    <p>{{ day.date }}</p>
+                    <p :class="['aqi-color', day.aqiClass]">{{ day.aqi }} ({{ day.category }})</p>
+                    <p>{{ day.advice }}</p>
                 </div>
             </section>
         </template>
@@ -68,6 +86,11 @@ const mapStore = useMapStore();
 const groundData = ref(null);
 const stationCity = ref('');
 const tempoData = ref(null);
+const isAdvancedOpen = ref(false);
+
+const toggleAdvanced = () => {
+    isAdvancedOpen.value = !isAdvancedOpen.value;
+}
 
 // Placeholder for forecast (not fetched yet)
 const forecast = ref([
@@ -163,7 +186,7 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
     background-color: var(--secondary-color);
     padding: 0.75rem;
     border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px var(--overlay-bg);
 }
 
 .aqi-value,
@@ -205,12 +228,76 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 
 .forecast-day {
     border-top: 1px solid var(--text-color);
-    padding: 0.5rem 0;
+    padding: 0.5em 0;
 }
 
 .forecast-day:first-child {
     border-top: none;
 }
+
+.main-pollutants-ground-data {
+    padding: 0.5em 0.75em;
+    margin-bottom: 1em;
+    border-left: 3px solid var(--action-color);
+    border-radius: 4px;
+    background-color: var(--overlay-bg);
+}
+
+.main-pollutants-ground-data p {
+    margin: 0.15em 0;
+    font-size: 0.98em;
+}
+
+.other-ground-data {
+    border-left: 3px solid var(--action-color);
+    background-color: var(--overlay-bg);
+    border-radius: 4px;
+    padding: 0.4em 0.75em;
+    margin-bottom: 1em;
+    font-size: 0.97em;
+}
+
+.advanced-ground-data {
+    margin-top: 0.5em;
+    padding-left: 0.75em;
+    border-radius: 4px;
+    font-size: 0.96em;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+}
+
+.advanced-ground-data.open {
+    max-height: 200px;
+    opacity: 1;
+}
+
+.ground-data .toggle-button {
+    margin-top: 0.75em;
+    font-weight: 500;
+    padding: 0.25em 0.5em;
+    border-radius: 3px;
+    border: 1px solid var(--action-color);
+    transition: .3s ease-in-out background-color;
+}
+
+.ground-data .toggle-button:hover {
+    background-color: var(--action-hover-color);
+}
+
+.toggle-button {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    background-color: var(--action-color);
+    cursor: pointer;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    margin-top: .5em;
+}
+
 
 .loading-state {
     display: flex;
@@ -225,7 +312,7 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 .loading-spinner {
     width: 40px;
     height: 40px;
-    border: 4px solid var(--text-color);;
+    border: 4px solid var(--text-color);
     border-top: 4px solid var(--action-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;

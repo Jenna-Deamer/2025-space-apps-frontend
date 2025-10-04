@@ -279,7 +279,7 @@ onUnmounted(() => {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--secondary-color);
+    background-color: #131313;
     display: flex;
     justify-content: center;
     align-items: center;
