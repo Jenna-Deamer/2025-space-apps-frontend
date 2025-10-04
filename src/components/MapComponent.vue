@@ -7,6 +7,9 @@
             </div>
         </div>
         <div id="map"></div>
+        <div v-if="mapStore.tempoData?.imageBytes" class="corner-image">
+            <img :src="`data:image/png;base64,${mapStore.tempoData.imageBytes}`" alt="Tempo Data Visualization" />
+        </div>
     </div>
 </template>
 
@@ -18,11 +21,12 @@ import { useMapStore } from '../stores/MapStore';
 
 const mapStore = useMapStore();
 const initialMap = ref(null);
+const tempoOverlay = ref(null);
 
 onMounted(() => {
     initialMap.value = L.map('map');
 
-    const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 20
@@ -47,7 +51,7 @@ onMounted(() => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
                 initialMap.value.setView([lat, lng], 13);
-                mapStore.setSelectedLocation({lat, lng}) // set loc to trigger fetch
+                mapStore.setSelectedLocation({ lat, lng }) // set loc to trigger fetch
 
                 tileLayer.once('load', () => {
                     mapStore.setMapLoading(false);
@@ -83,7 +87,35 @@ onMounted(() => {
     setTimeout(() => {
         initialMap.value.invalidateSize();
     }, 200);
+
+    // Fetch and display tempo data
+    fetchTempoData();
 });
+
+async function fetchTempoData() {
+    const data = await mapStore.getTempoData();
+
+    if (data && data.imageBytes && initialMap.value) {
+        // Convert byte array to base64 image URL
+        const base64Image = `data:image/png;base64,${data.imageBytes}`;
+
+        // Define bounds based on the hardcoded lat/longs from the backend
+        const tempoBounds = L.latLngBounds(
+            [45, -90],  // top left (lat2, lon1)
+            [30, -75]   // bottom right (lat1, lon2)
+        );
+
+        // Remove existing overlay if present
+        if (tempoOverlay.value) {
+            initialMap.value.removeLayer(tempoOverlay.value);
+        }
+
+        // Add tempo image overlay
+        tempoOverlay.value = L.imageOverlay(base64Image, tempoBounds, {
+            opacity: 1
+        }).addTo(initialMap.value);
+    }
+}
 
 watch(() => mapStore.selectedLocation, (newLocation) => {
     if (newLocation && initialMap.value) {
@@ -152,5 +184,24 @@ watch(() => mapStore.selectedLocation, (newLocation) => {
     60% {
         transform: translateY(-5px);
     }
+}
+
+.corner-image {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 8px;
+    border-radius: 8px;
+    max-width: 300px;
+}
+
+.corner-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    opacity: 1;
 }
 </style>
