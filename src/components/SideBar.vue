@@ -1,7 +1,25 @@
 <template>
-    <div class="sidebar-content">
-        <h2>Sidebar</h2>
-    </div>
+    <aside class="sidebar-content">
+        <div>
+            <h2>TEMPO Data</h2>
+            <div>
+
+            </div>
+        </div>
+        <div>
+            <h2>Ground Data</h2>
+            <div>
+
+            </div>
+        </div>
+
+        <div>
+            <h2>Forecast</h2>
+            <div>
+                
+            </div>
+        </div>
+    </aside>
 </template>
 
 <style scoped>
