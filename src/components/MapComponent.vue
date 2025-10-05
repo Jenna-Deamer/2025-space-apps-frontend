@@ -29,12 +29,19 @@ const debounceTimer = ref(null);
 const timelapseDebounceTimer = ref(null);
 
 onMounted(() => {
-    initialMap.value = L.map('map');
+    initialMap.value = L.map('map', {
+        maxBounds: L.latLngBounds(
+            [15, -170.59570312500003],
+            [70, -51.02050781250001]
+        ),
+        maxBoundsViscosity: 1.0
+    });
 
     const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
         subdomains: 'abcd',
-        maxZoom: 20
+        maxZoom: 20,
+        minZoom: 5
     }).addTo(initialMap.value);
 
     const loadWithFallback = () => {
@@ -81,6 +88,14 @@ onMounted(() => {
             lon2: northEast.lng
         };
 
+        // Log bounds information
+        console.log('Map Bounds:', {
+            leftLongitude: southWest.lng,
+            rightLongitude: northEast.lng,
+            bottomLatitude: southWest.lat,
+            topLatitude: northEast.lat
+        });
+
         // Clear existing timers
         if (debounceTimer.value) {
             clearTimeout(debounceTimer.value);
@@ -98,6 +113,12 @@ onMounted(() => {
         timelapseDebounceTimer.value = setTimeout(() => {
             fetchTimelapseData();
         }, 3000);
+    });
+
+    // Add zoom level logging
+    initialMap.value.on('zoomend', () => {
+        const currentZoom = initialMap.value.getZoom();
+        console.log('Current Zoom Level:', currentZoom);
     });
 });
 
