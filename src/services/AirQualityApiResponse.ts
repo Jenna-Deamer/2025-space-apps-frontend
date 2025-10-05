@@ -44,6 +44,17 @@ export interface AirQualityApiResponse {
     groundData: GroundDataResponse;
 }
 
+
+function moleculesToMicrogramsPerCubicMeter(
+    moleculesPerM3: number,
+    molecularWeight: number
+): number {
+    const AVOGADRO = 6.02214076e23; // molecules per mole
+
+    // µg/m³ = (molecules/m³ × M / N_A) × 1e6
+    return (moleculesPerM3 * molecularWeight / AVOGADRO) * 1e6;
+}
+
 export const airQualityService = {
     async getGroundData(lon: number, lat: number): Promise<GroundDataResponse | null> {
         const CACHE_KEY = `groundData_cache_${lon}_${lat}`;
@@ -89,7 +100,7 @@ export const airQualityService = {
         }
     },
 
-    async getTempoData(lat1: number, lat2: number, lon1: number, lon2: number, retryCount = 0, maxRetries = 3): Promise<{ minNO2: number, maxNO2: number, imageBytes: string } | null> {
+    async getTempoData(lat1: number, lat2: number, lon1: number, lon2: number, retryCount = 0, maxRetries = 3): Promise<{ minNO2: number, maxNO2: number, centerNO2: number, imageBytes: string } | null> {
         try {
             console.log('Fetching TEMPO data...');
             const response = await fetch(`http://localhost:8080/api/level-three/retrieve?lat1=${lat1}&lat2=${lat2}&lon1=${lon1}&lon2=${lon2}`, {
@@ -102,10 +113,15 @@ export const airQualityService = {
 
             console.log('Min NO2:', data.minNO2);
             console.log('Max NO2:', data.maxNO2);
+            // console.log(data)
+
+            data.centerNO2 = moleculesToMicrogramsPerCubicMeter(data.centerNO2, 46.0055)
+            console.log(data.centerNO2)
 
             return {
                 minNO2: data.minNO2,
                 maxNO2: data.maxNO2,
+                centerNO2: data.centerNO2,
                 imageBytes: data.imagePng
             };
         } catch (error) {

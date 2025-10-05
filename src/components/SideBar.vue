@@ -22,11 +22,7 @@
             <section class="card tempo-data">
                 <h3>TEMPO Satellite Data</h3>
                 <template v-if="tempoData">
-                    <p>Nitrogen dioxide (NO2): {{ tempoData.no2 }} ppb</p>
-                    <p>Formaldehyde (CH2O): {{ tempoData.ch2o }} ppb</p>
-                    <p>Aerosol Index (AI): {{ tempoData.ai }}</p>
-                    <p>Particulate matter (PM): {{ tempoData.pm }} µg/m³</p>
-                    <p>Ozone (O3): {{ tempoData.o3 }} ppb</p>
+                    <p>Center NO2: {{ tempoData.centerNO2 }} µg/m³</p>
                 </template>
                 <p v-else>Data unavailable</p>
             </section>
@@ -159,9 +155,13 @@ const healthAdvice = computed(() => {
 // Watch for location changes and fetch data
 watch(() => mapStore.selectedLocation, async (newLocation) => {
     if (newLocation) {
-        console.log(newLocation);
         groundData.value = await airQualityService.getGroundData(newLocation.lng, newLocation.lat);
-        tempoData.value = await airQualityService.getTempoData();
+        // Bounding Box
+        const lat1 = newLocation.lat - 0.05;
+        const lat2 = newLocation.lat + 0.05;
+        const lon1 = newLocation.lng - 0.05;
+        const lon2 = newLocation.lng + 0.05;
+        tempoData.value = await airQualityService.getTempoData(lat1, lat2, lon1, lon2);
 
         if (groundData.value?.coord) {
             stationCity.value = await airQualityService.reverseGeocode(groundData.value.coord.lat, groundData.value.coord.lon);
@@ -235,7 +235,7 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 }
 
 .forecast-day:first-child {
-    border:none;
+    border: none;
 }
 
 .main-pollutants-ground-data {
