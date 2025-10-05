@@ -55,6 +55,7 @@ main {
     background-color: var(--primary-color);
     color: var(--text-color);
     font-family: 'Roboto', sans-serif;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 .map {
@@ -74,7 +75,7 @@ main {
         grid-template-rows: 45vh 1fr;
         height: calc(100vh - var(--ion-safe-area-top) - 72px);
         overflow-y: auto;
-        /* Allow scrolling on mobile to access sidebar */
+        overflow-x: hidden; /* Ensure no horizontal scroll on mobile */
     }
 
     .map {
