@@ -23,7 +23,13 @@
             <section class="card tempo-data">
                 <h3>TEMPO Satellite Data</h3>
                 <template v-if="mapStore.tempoData">
-                    <p>Center NO2: {{ mapStore.tempoData.centerNO2.toFixed(2) }} µg/m³</p>
+                    <Tooltip>
+                        <p>Center NO2: {{ mapStore.tempoData.centerNO2.toFixed(2) }} µg/m³</p>
+                        <template #content>
+                            <strong>Nitrogen Dioxide (NO2)</strong><br>
+                            A reddish-brown gas that forms from vehicle emissions and industrial sources. High levels can irritate airways and worsen respiratory conditions.
+                        </template>
+                    </Tooltip>
                 </template>
                 <p v-else>Data unavailable</p>
             </section>
@@ -34,26 +40,73 @@
                 <template v-if="mapStore.groundData && mapStore.groundData.list.length > 0">
                     <div>
                         <div class="main-pollutants-ground-data">
-                            <p>PM2.5: {{ mapStore.groundData.list[0].components.pm2_5 }} µg/m³</p>
-                            <p>PM10: {{ mapStore.groundData.list[0].components.pm10 }} µg/m³</p>
-                            <p>CO: {{ mapStore.groundData.list[0].components.co }} µg/m³</p>
-                            <p>O3: {{ mapStore.groundData.list[0].components.o3 }} µg/m³</p>
+                            <Tooltip>
+                                <p>PM2.5: {{ mapStore.groundData.list[0].components.pm2_5 }} µg/m³</p>
+                                <template #content>
+                                    <strong>Fine Particulate Matter (PM2.5)</strong><br>
+                                    Tiny particles less than 2.5 micrometers in diameter. Can penetrate deep into lungs and bloodstream, causing serious health effects.
+                                </template>
+                            </Tooltip>
+                            <Tooltip>
+                                <p>PM10: {{ mapStore.groundData.list[0].components.pm10 }} µg/m³</p>
+                                <template #content>
+                                    <strong>Coarse Particulate Matter (PM10)</strong><br>
+                                    Particles less than 10 micrometers in diameter. Can cause irritation to eyes, nose, and throat, and aggravate asthma.
+                                </template>
+                            </Tooltip>
+                            <Tooltip>
+                                <p>CO: {{ mapStore.groundData.list[0].components.co }} µg/m³</p>
+                                <template #content>
+                                    <strong>Carbon Monoxide (CO)</strong><br>
+                                    A colorless, odorless gas from incomplete fuel combustion. Reduces oxygen delivery to organs and tissues.
+                                </template>
+                            </Tooltip>
+                            <Tooltip>
+                                <p>O3: {{ mapStore.groundData.list[0].components.o3 }} µg/m³</p>
+                                <template #content>
+                                    <strong>Ground-level Ozone (O3)</strong><br>
+                                    Forms when pollutants react in sunlight. Can trigger asthma attacks and reduce lung function.
+                                </template>
+                            </Tooltip>
                         </div>
                         <div class="other-ground-data">
                             <p>Station: {{ mapStore.stationCity }}</p>
                             <p>AQI: {{ mapStore.groundData.list[0].main.aqi }} ({{ aqiCategory }})</p>
                         </div>
-
                     </div>
                     <div>
                         <button @click="toggleAdvanced" class="toggle-button">
                             {{ isAdvancedOpen ? '▲' : '▼' }} Advanced Data
                         </button>
                         <div class="advanced-ground-data" :class="{ open: isAdvancedOpen }">
-                            <p>NO: {{ mapStore.groundData.list[0].components.no }} µg/m³</p>
-                            <p>NO2: {{ mapStore.groundData.list[0].components.no2 }} µg/m³</p>
-                            <p>SO2: {{ mapStore.groundData.list[0].components.so2 }} µg/m³</p>
-                            <p>NH3: {{ mapStore.groundData.list[0].components.nh3 }} µg/m³</p>
+                            <Tooltip>
+                                <p>NO: {{ mapStore.groundData.list[0].components.no }} µg/m³</p>
+                                <template #content>
+                                    <strong>Nitric Oxide (NO)</strong><br>
+                                    A colorless gas produced by combustion processes. Combines with oxygen to form nitrogen dioxide (NO2).
+                                </template>
+                            </Tooltip>
+                            <Tooltip>
+                                <p>NO2: {{ mapStore.groundData.list[0].components.no2 }} µg/m³</p>
+                                <template #content>
+                                    <strong>Nitrogen Dioxide (NO2)</strong><br>
+                                    A reddish-brown gas that forms from vehicle emissions and industrial sources. High levels can irritate airways and worsen respiratory conditions.
+                                </template>
+                            </Tooltip>
+                            <Tooltip>
+                                <p>SO2: {{ mapStore.groundData.list[0].components.so2 }} µg/m³</p>
+                                <template #content>
+                                    <strong>Sulfur Dioxide (SO2)</strong><br>
+                                    A gas with a pungent smell from burning fossil fuels. Can cause respiratory problems and eye irritation.
+                                </template>
+                            </Tooltip>
+                            <Tooltip>
+                                <p>NH3: {{ mapStore.groundData.list[0].components.nh3 }} µg/m³</p>
+                                <template #content>
+                                    <strong>Ammonia (NH3)</strong><br>
+                                    A colorless gas with a sharp smell, mainly from agricultural activities and waste treatment. Can irritate eyes, nose, and throat.
+                                </template>
+                            </Tooltip>
                         </div>
                     </div>
                 </template>
@@ -79,6 +132,7 @@
 import { ref, computed } from "vue";
 import { useMapStore } from '../stores/MapStore';
 import TimeLapse from '@/components/TimeLapse.vue';
+import Tooltip from '@/components/Tooltip.vue';
 
 const mapStore = useMapStore();
 
@@ -162,7 +216,6 @@ const healthAdvice = computed(() => {
     flex-direction: column;
     gap: 0.75rem;
     font-family: 'Roboto', sans-serif;
-
 }
 
 .card {
@@ -178,7 +231,6 @@ const healthAdvice = computed(() => {
 .aqi-color {
     font-weight: 700;
 }
-
 
 .aqi-value.good,
 .good {
@@ -210,12 +262,9 @@ const healthAdvice = computed(() => {
     color: var(--aqi-hazardous);
 }
 
-
 .forecast-day {
     padding: 0.5em 0;
 }
-
-
 
 .main-pollutants-ground-data {
     padding: 0.5em 0.75em;
@@ -239,13 +288,14 @@ const healthAdvice = computed(() => {
     font-size: 0.96em;
     max-height: 0;
     opacity: 0;
-    overflow: hidden;
+    overflow: visible; /* Changed from hidden to visible */
     transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
 }
 
 .advanced-ground-data.open {
-    max-height: 200px;
+    max-height: 300px; /* Increased to accommodate tooltips */
     opacity: 1;
+    overflow: visible; /* Ensure tooltips aren't clipped when open */
 }
 
 .ground-data .toggle-button {
@@ -272,7 +322,6 @@ const healthAdvice = computed(() => {
     align-items: center;
     margin-top: .5em;
 }
-
 
 .loading-state {
     display: flex;
