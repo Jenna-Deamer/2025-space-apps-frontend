@@ -96,8 +96,8 @@ const toggleAdvanced = () => {
 
 // Placeholder for forecast (not fetched yet)
 const forecast = ref([
-    { date: '2025-10-05', aqi: 45, category: 'Good', aqiClass: 'good', advice: 'Enjoy outdoor activities.' },
-    { date: '2025-10-06', aqi: 55, category: 'Moderate', aqiClass: 'moderate', advice: 'Sensitive groups should limit prolonged outdoor exertion.' },
+    { date: 'October 5th 2025', aqi: 45, category: 'Good', aqiClass: 'good', advice: 'Enjoy outdoor activities.' },
+    { date: 'October 6th 2025', aqi: 55, category: 'Moderate', aqiClass: 'moderate', advice: 'Sensitive groups should limit prolonged outdoor exertion.' },
 ]);
 
 // Computed: AQI category based on value (standard EPA breakpoints)
@@ -236,13 +236,10 @@ watch(() => mapStore.selectedLocation, async (newLocation) => {
 
 
 .forecast-day {
-    border-top: 1px solid var(--text-color);
     padding: 0.5em 0;
 }
 
-.forecast-day:first-child {
-    border: none;
-}
+
 
 .main-pollutants-ground-data {
     padding: 0.5em 0.75em;
