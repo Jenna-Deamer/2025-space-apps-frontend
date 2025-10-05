@@ -119,7 +119,7 @@ async function fetchTempoData() {
         await fadeOutOverlay(tempoOverlay.value);
     }
 
-    // Fetch current TEMPO and ground data
+    // Fetch current TEMPO data
     const data = await mapStore.getTempoData(lat1, lat2, lon1, lon2);
 
     // Fetch ground data for center of current view

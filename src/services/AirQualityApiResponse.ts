@@ -191,6 +191,47 @@ export const airQualityService = {
         }
     },
 
+    async getTempoDataFull(retryCount = 0, maxRetries = 3): Promise<{ minNO2: number, maxNO2: number, imageBytes: string, scaleFactor: number, generatedAt: string } | null> {
+        try {
+            console.log('Fetching full TEMPO data...');
+            const response = await fetch(`http://localhost:8080/api/level-three/retrieveFull`, {
+                signal: AbortSignal.timeout(15000)
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch full TEMPO data');
+
+            const data = await response.json();
+
+            console.log('Full TEMPO data - Min NO2:', data.minNO2);
+            console.log('Full TEMPO data - Max NO2:', data.maxNO2);
+            console.log('Full TEMPO data - Scale Factor:', data.scaleFactor);
+
+            return {
+                minNO2: data.minNO2,
+                maxNO2: data.maxNO2,
+                imageBytes: data.imagePng,
+                scaleFactor: data.scaleFactor,
+                generatedAt: data.generatedAtInstant
+            };
+        } catch (error) {
+            console.error('Error fetching full TEMPO data:', error);
+
+            // exponential backoff retry
+            if (retryCount < maxRetries) {
+                const newRetryCount = retryCount + 1;
+                const delay = Math.min(1000 * Math.pow(2, newRetryCount - 1), 8000);
+
+                console.log(`Retrying in ${delay}ms... (attempt ${newRetryCount}/${maxRetries})`);
+
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return this.getTempoDataFull(newRetryCount, maxRetries);
+            } else {
+                console.error("Max retries reached. Giving up.");
+                return null;
+            }
+        }
+    },
+
     async getForecastData() {
         try {
             console.log('Fetching Forecast data...');
