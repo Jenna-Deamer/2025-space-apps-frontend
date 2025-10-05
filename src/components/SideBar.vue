@@ -132,7 +132,7 @@
 import { ref, computed } from "vue";
 import { useMapStore } from '../stores/MapStore';
 import TimeLapse from '@/components/TimeLapse.vue';
-import Tooltip from '@/components/Tooltip.vue';
+import Tooltip from '@/components/TooltipComponent.vue';
 
 const mapStore = useMapStore();
 
