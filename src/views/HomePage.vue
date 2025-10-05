@@ -17,6 +17,7 @@
                 <div class="map">
                     <MapComponent ref="mapComponentRef" />
                 </div>
+            
                 <div class="sidebar">
                     <SideBar />
                 </div>
@@ -29,8 +30,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { IonContent, IonHeader, IonPage, IonToolbar, onIonViewDidEnter } from '@ionic/vue';
-import MapComponent from '../components/MapComponent.vue';
 import HeaderComponent from '@/components/HeaderComponent.vue';
+import MapComponent from '../components/MapComponent.vue';
 import SideBar from '@/components/SideBar.vue';
 
 const mapComponentRef = ref<InstanceType<typeof MapComponent> | null>(null);

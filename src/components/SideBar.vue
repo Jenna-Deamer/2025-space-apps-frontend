@@ -68,6 +68,10 @@
                     <p>{{ day.advice }}</p>
                 </div>
             </section>
+
+            <section class="card media-controls">
+                  <TimeLapseControls/>
+            </section>
         </template>
     </aside>
 </template>
@@ -76,6 +80,8 @@
 import { ref, computed, watch } from "vue";
 import { useMapStore } from '../stores/MapStore';
 import { airQualityService } from "../services/AirQualityApiResponse";
+import TimeLapseControls from '@/components/TimeLapseControls.vue';
+
 
 const mapStore = useMapStore();
 
