@@ -25,7 +25,7 @@ watch(() => mapStore.fetchingTempoData, (isFetching) => {
 
 <style scoped>
 .tempo-preview {
-    position: fixed;
+    position: absolute; 
     bottom: 20px;
     left: 20px;
     width: 150px;
