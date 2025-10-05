@@ -161,7 +161,6 @@ const healthAdvice = computed(() => {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    /* overflow-y: auto;     */
     font-family: 'Roboto', sans-serif;
 
 }
@@ -311,4 +310,20 @@ const healthAdvice = computed(() => {
     padding: 0.5em 0.75em;
     margin-bottom: 1em;
 }
+
+@media (max-width: 768px) {
+     .sidebar-content {
+       padding: 0.25rem;
+       gap: 0.5rem;
+     }
+     .card {
+       padding: 0.5rem;
+     }
+     .aqi-value, .aqi-color {
+       font-size: 0.9em;
+     }
+     .main-pollutants-ground-data p, .other-ground-data p, .advanced-ground-data p {
+       font-size: 0.85em;
+     }
+   }
 </style>
