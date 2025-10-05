@@ -1,7 +1,7 @@
 <template>
     <header class="header">
         <div class="project-title">
-            <img src="../../public/TempoLogo.webp" width="40px" height="40px" />
+            <img src="/TempoLogo.webp" width="40px" height="40px" />
             <h1 class="project-name">Tempo Analytics</h1>
         </div>
 
