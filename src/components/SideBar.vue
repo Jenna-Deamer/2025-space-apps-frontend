@@ -131,8 +131,8 @@
 <script setup lang="js">
 import { ref, computed } from "vue";
 import { useMapStore } from '../stores/MapStore';
-import TimeLapse from '@/components/TimeLapse.vue';
-import Tooltip from '@/components/TooltipComponent.vue';
+import TimeLapse from '../components/TimeLapse.vue';
+import Tooltip from '../components/TooltipComponent.vue';
 
 const mapStore = useMapStore();
 

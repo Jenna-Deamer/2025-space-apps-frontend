@@ -69,7 +69,7 @@
 }
 
 .tooltip-wrapper:hover :deep(p) {
-    color: var(--action-color);
+    color: var(--light-text-color);
     transition: color 0.2s ease-in-out;
 }
 
