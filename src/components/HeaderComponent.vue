@@ -1,6 +1,6 @@
 <template>
     <header class="header">
-        <h1 class="project-name">Space Apps 2025</h1>
+        <h1 class="project-name">Tempo Analytics</h1>
         <div class="search-container">
             <input ref="searchInput" class="search-input" type="text" placeholder="Enter Location..." />
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"

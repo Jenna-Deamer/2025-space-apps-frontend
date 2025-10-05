@@ -1,6 +1,9 @@
 <template>
     <section class="card media-controls">
         <h3>Timelapse</h3>
+        <p class="description">Preview TEMPO satellite images from the past 5 days to see air quality changes over time.
+        </p>
+
         <div v-if="mapStore.tempoDataHistory && mapStore.tempoDataHistory.length > 0" class="timelapse-preview">
             <img :src="`data:image/png;base64,${currentHistoryImage}`" alt="TEMPO Timelapse Preview"
                 class="preview-image" />
@@ -84,5 +87,10 @@ watch(() => mapStore.tempoDataHistory, (newHistory) => {
     text-align: center;
     color: var(--light-text-color);
     font-size: 0.9em;
+}
+
+.description {
+  color: var(--text-color);
+    margin: 0.5rem 0;
 }
 </style>
