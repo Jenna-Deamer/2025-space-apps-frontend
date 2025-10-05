@@ -10,8 +10,8 @@
             <!-- Air Quality Overview Card -->
             <section class="card aqi-overview">
                 <h3>Air Quality</h3>
-                <p v-if="groundData && groundData.list.length > 0" class="aqi-value" :class="aqiLevelClass">
-                    {{ groundData.list[0].main.aqi }} ({{ aqiCategory }})
+                <p v-if="mapStore.groundData && mapStore.groundData.list.length > 0" class="aqi-value" :class="aqiLevelClass">
+                    {{ mapStore.groundData.list[0].main.aqi }} ({{ aqiCategory }})
                 </p>
                 <p v-else>Data unavailable</p>
                 <p><strong>Main pollutant: {{ mainPollutant }}</strong></p>
@@ -22,7 +22,7 @@
             <section class="card tempo-data">
                 <h3>TEMPO Satellite Data</h3>
                 <template v-if="mapStore.tempoData">
-                    <p>Center NO2: {{ mapStore.tempoData.centerNO2 }} µg/m³</p>
+                    <p>Center NO2: {{ mapStore.tempoData.centerNO2.toFixed(2)}} µg/m³</p>
                 </template>
                 <p v-else>Data unavailable</p>
             </section>
@@ -30,17 +30,17 @@
             <!-- Ground Data Card -->
             <section class="card ground-data">
                 <h3>Ground Station Data</h3>
-                <template v-if="groundData && groundData.list.length > 0">
+                <template v-if="mapStore.groundData && mapStore.groundData.list.length > 0">
                     <div>
                         <div class="main-pollutants-ground-data">
-                            <p>PM2.5: {{ groundData.list[0].components.pm2_5 }} µg/m³</p>
-                            <p>PM10: {{ groundData.list[0].components.pm10 }} µg/m³</p>
-                            <p>CO: {{ groundData.list[0].components.co }} µg/m³</p>
-                            <p>O3: {{ groundData.list[0].components.o3 }} µg/m³</p>
+                            <p>PM2.5: {{ mapStore.groundData.list[0].components.pm2_5 }} µg/m³</p>
+                            <p>PM10: {{ mapStore.groundData.list[0].components.pm10 }} µg/m³</p>
+                            <p>CO: {{ mapStore.groundData.list[0].components.co }} µg/m³</p>
+                            <p>O3: {{ mapStore.groundData.list[0].components.o3 }} µg/m³</p>
                         </div>
                         <div class="other-ground-data">
-                            <p>Station: {{ stationCity }}</p>
-                            <p>AQI: {{ groundData.list[0].main.aqi }} ({{ aqiCategory }})</p>
+                            <p>Station: {{ mapStore.stationCity }}</p>
+                            <p>AQI: {{ mapStore.groundData.list[0].main.aqi }} ({{ aqiCategory }})</p>
                         </div>
 
                     </div>
@@ -49,10 +49,10 @@
                             {{ isAdvancedOpen ? '▲' : '▼' }} Advanced Data
                         </button>
                         <div class="advanced-ground-data" :class="{ open: isAdvancedOpen }">
-                            <p>NO: {{ groundData.list[0].components.no }} µg/m³</p>
-                            <p>NO2: {{ groundData.list[0].components.no2 }} µg/m³</p>
-                            <p>SO2: {{ groundData.list[0].components.so2 }} µg/m³</p>
-                            <p>NH3: {{ groundData.list[0].components.nh3 }} µg/m³</p>
+                            <p>NO: {{ mapStore.groundData.list[0].components.no }} µg/m³</p>
+                            <p>NO2: {{ mapStore.groundData.list[0].components.no2 }} µg/m³</p>
+                            <p>SO2: {{ mapStore.groundData.list[0].components.so2 }} µg/m³</p>
+                            <p>NH3: {{ mapStore.groundData.list[0].components.nh3 }} µg/m³</p>
                         </div>
                     </div>
                 </template>
@@ -77,15 +77,12 @@
 </template>
 
 <script setup lang="js">
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 import { useMapStore } from '../stores/MapStore';
-import { airQualityService } from "../services/AirQualityApiResponse";
 import TimeLapseControls from '@/components/TimeLapseControls.vue';
 
 const mapStore = useMapStore();
 
-const groundData = ref(null);
-const stationCity = ref('');
 const isAdvancedOpen = ref(false);
 
 const toggleAdvanced = () => {
@@ -100,8 +97,8 @@ const forecast = ref([
 
 // Computed: AQI category based on value (standard EPA breakpoints)
 const aqiCategory = computed(() => {
-    if (!groundData.value || !groundData.value.list.length) return 'Unknown';
-    const aqi = groundData.value.list[0].main.aqi;
+    if (!mapStore.groundData || !mapStore.groundData.list.length) return 'Unknown';
+    const aqi = mapStore.groundData.list[0].main.aqi;
     switch (true) {
         case aqi <= 50:
             return 'Good';
@@ -126,8 +123,8 @@ const aqiLevelClass = computed(() => {
 
 // Computed: Main pollutant (highest concentration among key components)
 const mainPollutant = computed(() => {
-    if (!groundData.value || !groundData.value.list.length) return 'Unknown';
-    const components = groundData.value.list[0].components;
+    if (!mapStore.groundData || !mapStore.groundData.list.length) return 'Unknown';
+    const components = mapStore.groundData.list[0].components;
     const pollutants = {
         'CO': components.co,
         'NO': components.no,
@@ -153,17 +150,6 @@ const healthAdvice = computed(() => {
         case 'Very Unhealthy': return 'Health alert: Everyone may experience more serious health effects. Avoid outdoor activities.';
         case 'Hazardous': return 'Health warnings of emergency conditions. Entire population is more likely to be affected.';
         default: return 'Data unavailable.';
-    }
-});
-
-// Watch for location changes and fetch data
-watch(() => mapStore.selectedLocation, async (newLocation) => {
-    if (newLocation) {
-        groundData.value = await airQualityService.getGroundData(newLocation.lng, newLocation.lat);
-    
-        if (groundData.value?.coord) {
-            stationCity.value = await airQualityService.reverseGeocode(groundData.value.coord.lat, groundData.value.coord.lon);
-        }
     }
 });
 </script>

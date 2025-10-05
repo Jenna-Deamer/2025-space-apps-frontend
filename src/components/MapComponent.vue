@@ -36,13 +36,6 @@ onMounted(() => {
         maxZoom: 20
     }).addTo(initialMap.value);
 
-    tileLayer.on('load', () => {
-        if (mapStore.loading) {
-            // Location might not be set yet, so do nothing here
-            // The final loading state will be resolved in geolocation callbacks or fallback
-        }
-    });
-
     const loadWithFallback = () => {
         initialMap.value.setView([44.59232, -79.45835], 13);
         mapStore.setSelectedLocation({ lat: 44.59232, lng: -79.45835 }); // set default loc
@@ -117,7 +110,13 @@ async function fetchTempoData() {
         await fadeOutOverlay(tempoOverlay.value);
     }
 
+    // Fetch both TEMPO and ground data
     const data = await mapStore.getTempoData(lat1, lat2, lon1, lon2);
+    
+    // Fetch ground data for center of current view
+    const centerLat = (lat1 + lat2) / 2;
+    const centerLng = (lon1 + lon2) / 2;
+    await mapStore.getGroundData(centerLng, centerLat);
 
     if (data && data.imageBytes && initialMap.value) {
         try {

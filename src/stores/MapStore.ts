@@ -6,7 +6,10 @@ export const useMapStore = defineStore('map', {
         loading: true,
         selectedLocation: null as { lat: number, lng: number } | null,
         tempoData: null as { minNO2: number, maxNO2: number, imageBytes: string } | null,
+        groundData: null as any,
+        stationCity: '' as string,
         fetchingTempoData: false as boolean,
+        fetchingGroundData: false as boolean,
     }),
 
     getters: {
@@ -29,6 +32,19 @@ export const useMapStore = defineStore('map', {
             this.fetchingTempoData = false;
 
             return this.tempoData;
+        },
+        async getGroundData(lng: number, lat: number): Promise<any> {
+            this.fetchingGroundData = true;
+
+            const data = await airQualityService.getGroundData(lng, lat);
+            this.groundData = data;
+
+            if (data?.coord) {
+                this.stationCity = await airQualityService.reverseGeocode(data.coord.lat, data.coord.lon);
+            }
+
+            this.fetchingGroundData = false;
+            return this.groundData;
         }
     }
 })
