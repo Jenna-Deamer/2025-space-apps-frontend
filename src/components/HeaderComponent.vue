@@ -85,4 +85,10 @@ input {
     pointer-events: none;
     color: var(--action-color);
 }
+
+@media (max-width: 500px) {
+    .search-input {
+        width: 150px;
+    }
+}
 </style>
