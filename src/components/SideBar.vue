@@ -21,8 +21,8 @@
             <!-- TEMPO Data Card -->
             <section class="card tempo-data">
                 <h3>TEMPO Satellite Data</h3>
-                <template v-if="tempoData">
-                    <p>Center NO2: {{ tempoData.centerNO2 }} µg/m³</p>
+                <template v-if="mapStore.tempoData">
+                    <p>Center NO2: {{ mapStore.tempoData.centerNO2 }} µg/m³</p>
                 </template>
                 <p v-else>Data unavailable</p>
             </section>
@@ -82,12 +82,10 @@ import { useMapStore } from '../stores/MapStore';
 import { airQualityService } from "../services/AirQualityApiResponse";
 import TimeLapseControls from '@/components/TimeLapseControls.vue';
 
-
 const mapStore = useMapStore();
 
 const groundData = ref(null);
 const stationCity = ref('');
-const tempoData = ref(null);
 const isAdvancedOpen = ref(false);
 
 const toggleAdvanced = () => {
@@ -162,13 +160,7 @@ const healthAdvice = computed(() => {
 watch(() => mapStore.selectedLocation, async (newLocation) => {
     if (newLocation) {
         groundData.value = await airQualityService.getGroundData(newLocation.lng, newLocation.lat);
-        // Bounding Box
-        const lat1 = newLocation.lat - 0.05;
-        const lat2 = newLocation.lat + 0.05;
-        const lon1 = newLocation.lng - 0.05;
-        const lon2 = newLocation.lng + 0.05;
-        tempoData.value = await airQualityService.getTempoData(lat1, lat2, lon1, lon2);
-
+    
         if (groundData.value?.coord) {
             stationCity.value = await airQualityService.reverseGeocode(groundData.value.coord.lat, groundData.value.coord.lon);
         }
