@@ -12,6 +12,9 @@ export const useMapStore = defineStore('map', {
         tempoDataHistory: null as TempoDataHistoryItem[] | null,
         fetchingTempoDataHistory: false as boolean,
         fetchingGroundData: false as boolean,
+        tempoDataFull: null as { minNO2: number, maxNO2: number, imageBytes: string, scaleFactor: number, generatedAt: string } | null,
+        fetchingTempoDataFull: false as boolean,
+        firstTempoDataLoaded: false as boolean,
     }),
 
     getters: {
@@ -32,6 +35,10 @@ export const useMapStore = defineStore('map', {
 
             this.tempoData = data;
             this.fetchingTempoData = false;
+
+            if (data && !this.firstTempoDataLoaded) {
+                this.firstTempoDataLoaded = true;
+            }
 
             return this.tempoData;
         },
@@ -57,6 +64,16 @@ export const useMapStore = defineStore('map', {
 
             this.fetchingGroundData = false;
             return this.groundData;
+        },
+        async getTempoDataFull(): Promise<{ minNO2: number, maxNO2: number, imageBytes: string, scaleFactor: number, generatedAt: string } | null> {
+            this.fetchingTempoDataFull = true;
+
+            const data = await airQualityService.getTempoDataFull();
+
+            this.tempoDataFull = data;
+            this.fetchingTempoDataFull = false;
+
+            return this.tempoDataFull;
         }
     }
 })

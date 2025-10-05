@@ -1,10 +1,11 @@
 <template>
-    <div class="tempo-preview">
-        <div v-if="mapStore.fetchingTempoData" class="loading-state">
+    <div v-if="shouldShow" class="tempo-preview" :class="{ 'fade-in': isVisible }">
+        <div v-if="mapStore.fetchingTempoDataFull" class="loading-state">
             <span>Fetching tempo data...</span>
         </div>
-        <img v-else-if="mapStore.tempoData?.imageBytes" :src="`data:image/png;base64,${mapStore.tempoData.imageBytes}`"
-            :class="{ 'fade-in': imageLoaded }" @load="imageLoaded = true" alt="Tempo NO2 Data" />
+        <img v-else-if="mapStore.tempoDataFull?.imageBytes"
+            :src="`data:image/png;base64,${mapStore.tempoDataFull.imageBytes}`"
+            :class="{ 'image-fade-in': imageLoaded }" @load="onImageLoad" alt="Full Tempo NO2 Data" />
     </div>
 </template>
 
@@ -14,18 +15,29 @@ import { useMapStore } from '@/stores/MapStore';
 
 const mapStore = useMapStore();
 const imageLoaded = ref(false);
+const shouldShow = ref(false);
+const isVisible = ref(false);
 
-// Resetting imageLoaded when new data starts fetching
-watch(() => mapStore.fetchingTempoData, (isFetching) => {
-    if (isFetching) {
-        imageLoaded.value = false;
+const onImageLoad = () => {
+    imageLoaded.value = true;
+};
+
+// Watch for first tempo data load
+watch(() => mapStore.firstTempoDataLoaded, async (loaded) => {
+    if (loaded && !mapStore.tempoDataFull && !mapStore.fetchingTempoDataFull) {
+        shouldShow.value = true;
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await mapStore.getTempoDataFull();
+        // Fade in after data is loaded
+        await new Promise(resolve => setTimeout(resolve, 100));
+        isVisible.value = true;
     }
-});
+}, { immediate: true });
 </script>
 
 <style scoped>
 .tempo-preview {
-    position: absolute; 
+    position: absolute;
     bottom: 20px;
     left: 20px;
     width: 150px;
@@ -37,6 +49,13 @@ watch(() => mapStore.fetchingTempoData, (isFetching) => {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    padding: 8px;
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+}
+
+.tempo-preview.fade-in {
+    opacity: 1;
 }
 
 .loading-state {
@@ -50,13 +69,13 @@ watch(() => mapStore.fetchingTempoData, (isFetching) => {
 img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
+    object-fit: contain;
+    border-radius: 4px;
     opacity: 0;
     transition: opacity 0.5s ease-in;
 }
 
-img.fade-in {
+img.image-fade-in {
     opacity: 1;
 }
 </style>
