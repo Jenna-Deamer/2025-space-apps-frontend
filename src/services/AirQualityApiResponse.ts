@@ -44,6 +44,14 @@ export interface AirQualityApiResponse {
     groundData: GroundDataResponse;
 }
 
+export interface TempoDataHistoryItem {
+    minNO2: number;
+    maxNO2: number;
+    centerNO2: number;
+    imageBytes: string;
+    timestamp: string;
+}
+
 
 function moleculesToMicrogramsPerCubicMeter(
     moleculesPerM3: number,
@@ -136,6 +144,46 @@ export const airQualityService = {
 
                 await new Promise(resolve => setTimeout(resolve, delay));
                 return this.getTempoData(lat1, lat2, lon1, lon2, newRetryCount, maxRetries);
+            } else {
+                console.error("Max retries reached. Giving up.");
+                return null;
+            }
+        }
+    },
+
+    async getTempoDataHistory(lat1: number, lat2: number, lon1: number, lon2: number, n: number, retryCount = 0, maxRetries = 3): Promise<TempoDataHistoryItem[] | null> {
+        try {
+            console.log(`Fetching ${n} latest TEMPO data...`);
+            const response = await fetch(`http://localhost:8080/api/level-three/retrieveN?lat1=${lat1}&lat2=${lat2}&lon1=${lon1}&lon2=${lon2}&n=${n}`, {
+                signal: AbortSignal.timeout(15000)
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch TEMPO history data');
+
+            const dataList = await response.json();
+
+            const processedData = dataList.map((item: any) => ({
+                minNO2: item.minNO2,
+                maxNO2: item.maxNO2,
+                centerNO2: moleculesToMicrogramsPerCubicMeter(item.centerNO2, 46.0055),
+                imageBytes: item.imagePng,
+                timestamp: item.timestamp
+            }));
+
+            console.log(`Fetched ${processedData.length} TEMPO images`);
+            return processedData;
+        } catch (error) {
+            console.error('Error fetching TEMPO history data:', error);
+
+            // exponential backoff retry
+            if (retryCount < maxRetries) {
+                const newRetryCount = retryCount + 1;
+                const delay = Math.min(1000 * Math.pow(2, newRetryCount - 1), 8000);
+
+                console.log(`Retrying in ${delay}ms... (attempt ${newRetryCount}/${maxRetries})`);
+
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return this.getTempoDataHistory(lat1, lat2, lon1, lon2, n, newRetryCount, maxRetries);
             } else {
                 console.error("Max retries reached. Giving up.");
                 return null;

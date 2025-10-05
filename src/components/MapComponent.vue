@@ -26,6 +26,7 @@ const tempoOverlay = ref(null);
 const currentBounds = ref(null);
 const currentBlobUrl = ref(null);
 const debounceTimer = ref(null);
+const timelapseDebounceTimer = ref(null);
 
 onMounted(() => {
     initialMap.value = L.map('map');
@@ -80,15 +81,23 @@ onMounted(() => {
             lon2: northEast.lng
         };
 
-        // Clear existing timer
+        // Clear existing timers
         if (debounceTimer.value) {
             clearTimeout(debounceTimer.value);
         }
+        if (timelapseDebounceTimer.value) {
+            clearTimeout(timelapseDebounceTimer.value);
+        }
 
-        // Set new timer to fetch data after 500ms of no movement
+        // Set new timer to fetch current data after 500ms of no movement
         debounceTimer.value = setTimeout(() => {
             fetchTempoData();
         }, 500);
+
+        // Set new timer to fetch timelapse data after 3 seconds of no movement
+        timelapseDebounceTimer.value = setTimeout(() => {
+            fetchTimelapseData();
+        }, 3000);
     });
 });
 
@@ -110,9 +119,9 @@ async function fetchTempoData() {
         await fadeOutOverlay(tempoOverlay.value);
     }
 
-    // Fetch both TEMPO and ground data
+    // Fetch current TEMPO and ground data
     const data = await mapStore.getTempoData(lat1, lat2, lon1, lon2);
-    
+
     // Fetch ground data for center of current view
     const centerLat = (lat1 + lat2) / 2;
     const centerLng = (lon1 + lon2) / 2;
@@ -156,6 +165,15 @@ async function fetchTempoData() {
             console.error('Error creating overlay:', error);
         }
     }
+}
+
+async function fetchTimelapseData() {
+    if (!currentBounds.value || !initialMap.value) return;
+
+    const { lat1, lat2, lon1, lon2 } = currentBounds.value;
+
+    // Fetch history data (last 5 images) for timelapse
+    await mapStore.getTempoDataHistory(lat1, lat2, lon1, lon2, 5);
 }
 
 function fadeOutOverlay(overlay) {
@@ -253,6 +271,9 @@ onUnmounted(() => {
     }
     if (debounceTimer.value) {
         clearTimeout(debounceTimer.value);
+    }
+    if (timelapseDebounceTimer.value) {
+        clearTimeout(timelapseDebounceTimer.value);
     }
 });
 </script>

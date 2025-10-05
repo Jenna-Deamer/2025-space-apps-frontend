@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { airQualityService } from '../services/AirQualityApiResponse.js'
+import { airQualityService, TempoDataHistoryItem } from '../services/AirQualityApiResponse.js'
 
 export const useMapStore = defineStore('map', {
     state: () => ({
@@ -9,6 +9,8 @@ export const useMapStore = defineStore('map', {
         groundData: null as any,
         stationCity: '' as string,
         fetchingTempoData: false as boolean,
+        tempoDataHistory: null as TempoDataHistoryItem[] | null,
+        fetchingTempoDataHistory: false as boolean,
         fetchingGroundData: false as boolean,
     }),
 
@@ -32,6 +34,16 @@ export const useMapStore = defineStore('map', {
             this.fetchingTempoData = false;
 
             return this.tempoData;
+        },
+        async getTempoDataHistory(lat1: number, lat2: number, lon1: number, lon2: number, n: number): Promise<TempoDataHistoryItem[] | null> {
+            this.fetchingTempoDataHistory = true;
+
+            const data = await airQualityService.getTempoDataHistory(lat1, lat2, lon1, lon2, n);
+
+            this.tempoDataHistory = data;
+            this.fetchingTempoDataHistory = false;
+
+            return this.tempoDataHistory;
         },
         async getGroundData(lng: number, lat: number): Promise<any> {
             this.fetchingGroundData = true;
