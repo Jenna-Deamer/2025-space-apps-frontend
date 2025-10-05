@@ -46,6 +46,7 @@ onIonViewDidEnter(() => {
 main {
     display: grid;
     height: 100%;
+    height: calc(100vh - var(--ion-safe-area-top) - 72px);
     grid-template-columns: 3fr 1fr;
     gap: .5rem;
     background-color: var(--primary-color);
@@ -53,10 +54,33 @@ main {
     font-family: 'Roboto', sans-serif;
 }
 
+.map {
+    height: 100%;
+    overflow: hidden; /* Contain the map */
+}
+
+.sidebar {
+    height: 100%;
+    overflow: auto; 
+}
+
 @media (max-width: 700px) {
     main {
         grid-template-columns: 1fr;
         grid-template-rows: 45vh 1fr;
+        height: calc(100vh - var(--ion-safe-area-top) - 72px);
+        overflow-y: auto; /* Allow scrolling on mobile to access sidebar */
+    }
+    
+    .map {
+        height: 45vh; 
+        overflow: hidden;
+    }
+    
+    .sidebar {
+        height: auto; 
+        min-height: 55vh; 
+        overflow: visible; 
     }
 }
 </style>

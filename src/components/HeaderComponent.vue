@@ -44,8 +44,9 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: .5em 1em;
+    padding: .2em .5em;
     border-bottom: #102136 3px solid;
+    max-height: 72px;
 }
 
 input {
