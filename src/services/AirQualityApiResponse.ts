@@ -89,17 +89,41 @@ export const airQualityService = {
         }
     },
 
-    async getTempoData(): Promise<TempoData | null> {
+    async getTempoData(lat1: number, lat2: number, lon1: number, lon2: number, retryCount = 0, maxRetries = 3): Promise<{ minNO2: number, maxNO2: number, imageBytes: string } | null> {
         try {
             console.log('Fetching TEMPO data...');
-            const response = await fetch('http://localhost:8080/api/level-three/retrieve');
+            const response = await fetch(`http://localhost:8080/api/level-three/retrieve?lat1=${lat1}&lat2=${lat2}&lon1=${lon1}&lon2=${lon2}`, {
+                signal: AbortSignal.timeout(10000)
+            });
+
             if (!response.ok) throw new Error('Failed to fetch Tempo data');
+
             const data = await response.json();
-            console.log(data);
-            return data;
+
+            console.log('Min NO2:', data.minNO2);
+            console.log('Max NO2:', data.maxNO2);
+
+            return {
+                minNO2: data.minNO2,
+                maxNO2: data.maxNO2,
+                imageBytes: data.imagePng
+            };
         } catch (error) {
             console.error('Error fetching TEMPO data:', error);
-            return null;
+
+            // exponential backoff retry
+            if (retryCount < maxRetries) {
+                const newRetryCount = retryCount + 1;
+                const delay = Math.min(1000 * Math.pow(2, newRetryCount - 1), 8000); // Max 8 seconds
+
+                console.log(`Retrying in ${delay}ms... (attempt ${newRetryCount}/${maxRetries})`);
+
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return this.getTempoData(lat1, lat2, lon1, lon2, newRetryCount, maxRetries);
+            } else {
+                console.error("Max retries reached. Giving up.");
+                return null;
+            }
         }
     },
 
@@ -115,6 +139,7 @@ export const airQualityService = {
             return null;
         }
     },
+
     async reverseGeocode(lat: number, lon: number) {
         try {
             const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
@@ -126,6 +151,4 @@ export const airQualityService = {
             return 'Unknown';
         }
     }
-
-
 }

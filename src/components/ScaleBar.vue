@@ -57,7 +57,6 @@ const formatScientific = (value) => {
     height: 20px;
     width: 200px;
     background: linear-gradient(to right, rgba(0, 255, 0, 0.5), rgba(255, 255, 0, 0.5), rgba(255, 0, 0, 0.5));
-    border-radius: 4px;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 

@@ -7,9 +7,7 @@
             </div>
         </div>
         <div id="map"></div>
-        <div v-if="mapStore.tempoData?.imageBytes" class="corner-image">
-            <img :src="`data:image/png;base64,${mapStore.tempoData.imageBytes}`" alt="Tempo Data Visualization" />
-        </div>
+        <TempoPreview />
         <ScaleBar v-if="mapStore.tempoData" :min="mapStore.tempoData.minNO2" :max="mapStore.tempoData.maxNO2" />
     </div>
 </template>
@@ -20,6 +18,7 @@ import "leaflet/dist/leaflet.css";
 import * as L from 'leaflet';
 import { useMapStore } from '../stores/MapStore';
 import ScaleBar from './ScaleBar.vue';
+import TempoPreview from './TempoPreview.vue';
 
 const mapStore = useMapStore();
 const initialMap = ref(null);
