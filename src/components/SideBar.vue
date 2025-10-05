@@ -6,7 +6,7 @@
         </div>
 
         <template v-else>
-            <h2>Overview</h2>
+            <h2>Results Summary</h2>
             <!-- Air Quality Overview Card -->
             <section class="card aqi-overview">
                 <h3>Air Quality</h3>
