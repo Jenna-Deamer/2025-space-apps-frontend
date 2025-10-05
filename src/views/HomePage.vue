@@ -17,13 +17,14 @@
                 <div class="map">
                     <MapComponent ref="mapComponentRef" />
                 </div>
-            
+
                 <div class="sidebar">
                     <SideBar />
                 </div>
             </main>
-
+            <FooterComponent />
         </ion-content>
+
     </ion-page>
 </template>
 
@@ -33,6 +34,7 @@ import { IonContent, IonHeader, IonPage, IonToolbar, onIonViewDidEnter } from '@
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import MapComponent from '../components/MapComponent.vue';
 import SideBar from '@/components/SideBar.vue';
+import FooterComponent from '@/components/FooterComponent.vue';
 
 const mapComponentRef = ref<InstanceType<typeof MapComponent> | null>(null);
 
@@ -57,12 +59,13 @@ main {
 
 .map {
     height: 100%;
-    overflow: hidden; /* Contain the map */
+    overflow: hidden;
+    /* Contain the map */
 }
 
 .sidebar {
     height: 100%;
-    overflow: auto; 
+    overflow: auto;
 }
 
 @media (max-width: 700px) {
@@ -70,18 +73,19 @@ main {
         grid-template-columns: 1fr;
         grid-template-rows: 45vh 1fr;
         height: calc(100vh - var(--ion-safe-area-top) - 72px);
-        overflow-y: auto; /* Allow scrolling on mobile to access sidebar */
+        overflow-y: auto;
+        /* Allow scrolling on mobile to access sidebar */
     }
-    
+
     .map {
-        height: 45vh; 
+        height: 45vh;
         overflow: hidden;
     }
-    
+
     .sidebar {
-        height: auto; 
-        min-height: 55vh; 
-        overflow: visible; 
+        height: auto;
+        min-height: 55vh;
+        overflow: visible;
     }
 }
 </style>
