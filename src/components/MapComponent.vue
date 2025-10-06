@@ -106,7 +106,7 @@ onMounted(() => {
 
         // Set new timer to fetch current data after 500ms of no movement
         debounceTimer.value = setTimeout(() => {
-            fetchTempoData();
+            fetchMapData();
         }, 500);
 
         // Set new timer to fetch timelapse data after 3 seconds of no movement
@@ -130,7 +130,7 @@ const forceResize = () => {
     });
 };
 
-async function fetchTempoData() {
+async function fetchMapData() {
     if (!currentBounds.value || !initialMap.value) return;
 
     const { lat1, lat2, lon1, lon2 } = currentBounds.value;
@@ -147,6 +147,7 @@ async function fetchTempoData() {
     const centerLat = (lat1 + lat2) / 2;
     const centerLng = (lon1 + lon2) / 2;
     await mapStore.getGroundData(centerLng, centerLat);
+    await mapStore.getForecastData(centerLng, centerLat);
 
     if (data && data.imageBytes && initialMap.value) {
         try {

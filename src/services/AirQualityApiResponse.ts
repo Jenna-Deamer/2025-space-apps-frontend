@@ -108,6 +108,20 @@ export const airQualityService = {
         }
     },
 
+    async getForecastData(lon: number, lat: number): Promise<any | null> {
+        try {
+            console.log('Fetching Forecast data...');
+            const response = await fetch(`http://localhost:8080/api/ground-based-air-quality/retrieveForecast?lat=${lat}&lon=${lon}`);
+            if (!response.ok) throw new Error('Failed to fetch Forecast data');
+            const data = await response.json();
+            console.log(data);
+            return data;
+        } catch (error) {
+            console.error('Error fetching Forecast data:', error);
+            return null;
+        }
+    },
+
     async getTempoData(lat1: number, lat2: number, lon1: number, lon2: number, retryCount = 0, maxRetries = 3): Promise<{ minNO2: number, maxNO2: number, centerNO2: number, imageBytes: string } | null> {
         try {
             console.log('Fetching TEMPO data...');
@@ -229,19 +243,6 @@ export const airQualityService = {
                 console.error("Max retries reached. Giving up.");
                 return null;
             }
-        }
-    },
-
-    async getForecastData() {
-        try {
-            console.log('Fetching Forecast data...');
-            const response = await fetch('');
-            if (!response.ok) throw new Error('Failed to fetch Forecast data');
-            console.log(response.json());
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching Forecast data:', error);
-            return null;
         }
     },
 

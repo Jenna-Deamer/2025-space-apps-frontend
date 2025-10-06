@@ -15,6 +15,8 @@ export const useMapStore = defineStore('map', {
         tempoDataFull: null as { minNO2: number, maxNO2: number, imageBytes: string, scaleFactor: number, generatedAt: string } | null,
         fetchingTempoDataFull: false as boolean,
         firstTempoDataLoaded: false as boolean,
+        forecastData: null as any,
+        fetchingForecastData: false as boolean,
     }),
 
     getters: {
@@ -64,6 +66,15 @@ export const useMapStore = defineStore('map', {
 
             this.fetchingGroundData = false;
             return this.groundData;
+        },
+        async getForecastData(lng: number, lat: number): Promise<any> {
+            this.fetchingForecastData = true;
+
+            const data = await airQualityService.getForecastData(lng, lat);
+            this.forecastData = data;
+
+            this.fetchingForecastData = false;
+            return this.forecastData;
         },
         async getTempoDataFull(): Promise<{ minNO2: number, maxNO2: number, imageBytes: string, scaleFactor: number, generatedAt: string } | null> {
             this.fetchingTempoDataFull = true;
