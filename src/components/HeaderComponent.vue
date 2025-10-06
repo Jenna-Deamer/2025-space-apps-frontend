@@ -24,6 +24,34 @@ import { useMapStore } from '../stores/MapStore';
 const searchInput = ref<HTMLInputElement | null>(null);
 const mapStore = useMapStore();
 
+const MAP_BOUNDS = {
+    minLat: 15,
+    maxLat: 70,
+    minLng: -170.59570312500003,
+    maxLng: -51.02050781250001
+};
+
+const DEFAULT_LOCATION = { lat: 44.59232, lng: -79.45835 };
+
+function constrainToBounds(lat: number, lng: number): { lat: number, lng: number } {
+    // Check if location is within bounds
+    const isWithinBounds =
+        lat >= MAP_BOUNDS.minLat &&
+        lat <= MAP_BOUNDS.maxLat &&
+        lng >= MAP_BOUNDS.minLng &&
+        lng <= MAP_BOUNDS.maxLng;
+
+    if (isWithinBounds) {
+        return { lat, lng };
+    }
+
+    // Show alert and return to default location if out of bounds
+    alert('TEMPO data is only available for North America. Please select a location within the specified bounds.');
+    console.warn(`Location out of bounds: (${lat}, ${lng}). Returning to default location.`);
+
+    return DEFAULT_LOCATION;
+}
+
 onMounted(() => {
     if (window.google && window.google.maps && searchInput.value) {
         const autocomplete = new window.google.maps.places.Autocomplete(searchInput.value, {
@@ -34,7 +62,10 @@ onMounted(() => {
             if (place.geometry && place.geometry.location) {
                 const lat = place.geometry.location.lat();
                 const lng = place.geometry.location.lng();
-                mapStore.setSelectedLocation({ lat, lng });
+
+                // Constrain location to map bounds
+                const constrainedLocation = constrainToBounds(lat, lng);
+                mapStore.setSelectedLocation(constrainedLocation);
             }
         });
     }
@@ -53,14 +84,16 @@ onMounted(() => {
     max-height: 72px;
 }
 
-.project-title{
+.project-title {
     display: flex;
     justify-content: center;
     align-items: center;
 }
-.project-title img{
+
+.project-title img {
     margin-right: 0.5em;
 }
+
 input {
     background-color: var(--secondary-color);
     border: var(--primary-color);
