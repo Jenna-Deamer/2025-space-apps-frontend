@@ -1,6 +1,6 @@
 <template>
   <footer>
-    <div class="footer-section challenge">
+    <section class="footer-section challenge">
       <h4>Challenge</h4>
       <p>
         <a href="https://www.spaceappschallenge.org/2025/challenges/from-earthdata-to-action-cloud-computing-with-earth-observation-data-for-predicting-cleaner-safer-skies/"
@@ -8,9 +8,9 @@
            NASA Space Apps 2025 – From EarthData to Action
         </a>
       </p>
-    </div>
+    </section>
 
-    <div class="footer-section resources">
+    <section class="footer-section resources">
       <h4>Resources</h4>
       <ul>
         <li>
@@ -24,9 +24,9 @@
           </a>
         </li>
       </ul>
-    </div>
+    </section>
 
-    <div class="footer-section credits">
+    <section class="footer-section credits">
       <h4>Credits</h4>
       <p>
         Built by 
@@ -34,7 +34,14 @@
         <a href="https://github.com/insertusernamed" target="_blank" rel="noopener noreferrer" aria-label="Daniel Yevtushenko's GitHub Profile">Daniel Yevtushenko</a>, and 
         <a href="https://github.com/Jenna-Deamer" target="_blank" rel="noopener noreferrer" aria-label="Jenna Deamer's GitHub Profile">Jenna Deamer</a>
       </p>
-    </div>
+    </section>
+    <section class="footer-section github">
+        <h4>Code Repositories</h4>
+        <p> <a href="https://github.com/Jenna-Deamer/2025-space-apps-frontend">Frontend</a></p>
+        <p> <a href="https://github.com/chrisbarbati/SpaceApps2025Backend">Backend</a></p>
+       
+       
+    </section>
   </footer>
 </template>
 
