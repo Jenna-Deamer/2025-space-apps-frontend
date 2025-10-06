@@ -81,11 +81,9 @@ export const airQualityService = {
         }
 
         try {
-            console.log('Fetching Ground data...');
             const response = await fetch(`${process.env.API_BASE_URL}/ground-based-air-quality/retrieve?lat=${lat}&lon=${lon}`);
             if (!response.ok) throw new Error('Failed to fetch Ground data');
             const data = await response.json();
-            console.log(data);
 
             // Calculating expiration time (next hour at :00)
             const now = new Date();
@@ -110,11 +108,9 @@ export const airQualityService = {
 
     async getForecastData(lon: number, lat: number): Promise<any | null> {
         try {
-            console.log('Fetching Forecast data...');
             const response = await fetch(`${process.env.API_BASE_URL}/ground-based-air-quality/retrieveForecast?lat=${lat}&lon=${lon}`);
             if (!response.ok) throw new Error('Failed to fetch Forecast data');
             const data = await response.json();
-            console.log(data);
             return data;
         } catch (error) {
             console.error('Error fetching Forecast data:', error);
@@ -124,7 +120,6 @@ export const airQualityService = {
 
     async getTempoData(lat1: number, lat2: number, lon1: number, lon2: number, retryCount = 0, maxRetries = 3): Promise<{ minNO2: number, maxNO2: number, centerNO2: number, imageBytes: string } | null> {
         try {
-            console.log('Fetching TEMPO data...');
             const response = await fetch(`${process.env.API_BASE_URL}/level-three/retrieve?lat1=${lat1}&lat2=${lat2}&lon1=${lon1}&lon2=${lon2}`, {
                 signal: AbortSignal.timeout(10000)
             });
@@ -133,13 +128,8 @@ export const airQualityService = {
 
             const data = await response.json();
 
-            console.log('Min NO2:', data.minNO2);
-            console.log('Max NO2:', data.maxNO2);
-            // console.log(data)
 
             data.centerNO2 = moleculesToMicrogramsPerCubicMeter(data.centerNO2, 46.0055)
-            console.log(data.centerNO2)
-
             return {
                 minNO2: data.minNO2,
                 maxNO2: data.maxNO2,
@@ -154,8 +144,6 @@ export const airQualityService = {
                 const newRetryCount = retryCount + 1;
                 const delay = Math.min(1000 * Math.pow(2, newRetryCount - 1), 8000); // Max 8 seconds
 
-                console.log(`Retrying in ${delay}ms... (attempt ${newRetryCount}/${maxRetries})`);
-
                 await new Promise(resolve => setTimeout(resolve, delay));
                 return this.getTempoData(lat1, lat2, lon1, lon2, newRetryCount, maxRetries);
             } else {
@@ -167,7 +155,6 @@ export const airQualityService = {
 
     async getTempoDataHistory(lat1: number, lat2: number, lon1: number, lon2: number, n: number, retryCount = 0, maxRetries = 3): Promise<TempoDataHistoryItem[] | null> {
         try {
-            console.log(`Fetching ${n} latest TEMPO data...`);
             const response = await fetch(`${process.env.API_BASE_URL}/level-three/retrieveN?lat1=${lat1}&lat2=${lat2}&lon1=${lon1}&lon2=${lon2}&n=${n}`, {
                 signal: AbortSignal.timeout(15000)
             });
@@ -183,8 +170,6 @@ export const airQualityService = {
                 imageBytes: item.imagePng,
                 timestamp: item.timestamp
             }));
-
-            console.log(`Fetched ${processedData.length} TEMPO images`);
             return processedData;
         } catch (error) {
             console.error('Error fetching TEMPO history data:', error);
@@ -194,12 +179,9 @@ export const airQualityService = {
                 const newRetryCount = retryCount + 1;
                 const delay = Math.min(1000 * Math.pow(2, newRetryCount - 1), 8000);
 
-                console.log(`Retrying in ${delay}ms... (attempt ${newRetryCount}/${maxRetries})`);
-
                 await new Promise(resolve => setTimeout(resolve, delay));
                 return this.getTempoDataHistory(lat1, lat2, lon1, lon2, n, newRetryCount, maxRetries);
             } else {
-                console.error("Max retries reached. Giving up.");
                 return null;
             }
         }
@@ -207,7 +189,6 @@ export const airQualityService = {
 
     async getTempoDataFull(retryCount = 0, maxRetries = 3): Promise<{ minNO2: number, maxNO2: number, imageBytes: string, scaleFactor: number, generatedAt: string } | null> {
         try {
-            console.log('Fetching full TEMPO data...');
             const response = await fetch(`${process.env.API_BASE_URL}/level-three/retrieveFull`, {
                 signal: AbortSignal.timeout(15000)
             });
@@ -215,10 +196,6 @@ export const airQualityService = {
             if (!response.ok) throw new Error('Failed to fetch full TEMPO data');
 
             const data = await response.json();
-
-            console.log('Full TEMPO data - Min NO2:', data.minNO2);
-            console.log('Full TEMPO data - Max NO2:', data.maxNO2);
-            console.log('Full TEMPO data - Scale Factor:', data.scaleFactor);
 
             return {
                 minNO2: data.minNO2,
@@ -228,14 +205,11 @@ export const airQualityService = {
                 generatedAt: data.generatedAtInstant
             };
         } catch (error) {
-            console.error('Error fetching full TEMPO data:', error);
 
             // exponential backoff retry
             if (retryCount < maxRetries) {
                 const newRetryCount = retryCount + 1;
                 const delay = Math.min(1000 * Math.pow(2, newRetryCount - 1), 8000);
-
-                console.log(`Retrying in ${delay}ms... (attempt ${newRetryCount}/${maxRetries})`);
 
                 await new Promise(resolve => setTimeout(resolve, delay));
                 return this.getTempoDataFull(newRetryCount, maxRetries);

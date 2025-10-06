@@ -29,7 +29,6 @@ const currentFrameIndex = ref(0);
 const currentHistoryImage = computed(() => {
     if (!mapStore.tempoDataHistory || mapStore.tempoDataHistory.length === 0) return '';
     const image = mapStore.tempoDataHistory[currentFrameIndex.value]?.imageBytes || '';
-    console.log('Current frame index:', currentFrameIndex.value, 'Image length:', image.length);
     return image;
 });
 
@@ -41,15 +40,13 @@ const currentTimestamp = computed(() => {
 });
 
 const handleFrameChange = (frameIndex) => {
-    console.log('Frame change to:', frameIndex, 'Total frames:', mapStore.tempoDataHistory?.length);
     if (mapStore.tempoDataHistory && frameIndex >= 0 && frameIndex < mapStore.tempoDataHistory.length) {
         currentFrameIndex.value = frameIndex;
     }
 };
 
 // Reset frame index when new history data is loaded
-watch(() => mapStore.tempoDataHistory, (newHistory) => {
-    console.log('New tempo history loaded:', newHistory?.length, 'images');
+watch(() => mapStore.tempoDataHistory, () => {
     currentFrameIndex.value = 0;
 });
 </script>

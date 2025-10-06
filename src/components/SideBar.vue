@@ -124,7 +124,7 @@
 
             <!-- Forecast Card -->
             <section class="card forecast">
-                <h3>Air Quality Forecast</h3>
+                <h3>Air Quality Four Day Forecast</h3>
                 <template v-if="mapStore.forecastData && mapStore.forecastData.list.length > 0">
                     <div class="forecast-day" v-for="day in formattedForecast" :key="day.date">
                         <p>{{ day.date }}</p>

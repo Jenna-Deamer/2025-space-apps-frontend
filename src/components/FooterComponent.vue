@@ -37,8 +37,8 @@
     </section>
     <section class="footer-section github">
         <h4>Code Repositories</h4>
-        <p> <a href="https://github.com/Jenna-Deamer/2025-space-apps-frontend">Frontend</a></p>
-        <p> <a href="https://github.com/chrisbarbati/SpaceApps2025Backend">Backend</a></p>
+        <p> <a href="https://github.com/Jenna-Deamer/2025-space-apps-frontend" target="_blank" rel="noopener noreferrer" aria-label="Frontend Repository on GitHub">Frontend</a></p>
+        <p> <a href="https://github.com/chrisbarbati/SpaceApps2025Backend" target="_blank" rel="noopener noreferrer" aria-label="Backend Repository on GitHub">Backend</a></p>
        
        
     </section>

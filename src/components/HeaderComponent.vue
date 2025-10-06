@@ -47,8 +47,6 @@ function constrainToBounds(lat: number, lng: number): { lat: number, lng: number
 
     // Show alert and return to default location if out of bounds
     alert('TEMPO data is only available for North America. Please select a location within the specified bounds.');
-    console.warn(`Location out of bounds: (${lat}, ${lng}). Returning to default location.`);
-
     return DEFAULT_LOCATION;
 }
 
