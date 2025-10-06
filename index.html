@@ -19,6 +19,17 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Ionic App" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+    <!-- Google Maps API - load early with callback -->
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyADIqJ9LK7-cBWpb9YMjZsGfeqFN6dut3E&libraries=places&loading=async&callback=initGoogleMaps"
+        async defer></script>
+    <script>
+        window.initGoogleMaps = function () {
+            window.googleMapsReady = true;
+            window.dispatchEvent(new Event('google-maps-ready'));
+        };
+    </script>
 </head>
 
 <body>
@@ -27,6 +38,3 @@
 </body>
 
 </html>
-<script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyADIqJ9LK7-cBWpb9YMjZsGfeqFN6dut3E&libraries=places&loading=async"></script>
-<!-- its a restricted api key so its fine to have it displayed frontend -->
