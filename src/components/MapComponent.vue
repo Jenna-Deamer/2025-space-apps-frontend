@@ -88,14 +88,6 @@ onMounted(() => {
             lon2: northEast.lng
         };
 
-        // Log bounds information
-        console.log('Map Bounds:', {
-            leftLongitude: southWest.lng,
-            rightLongitude: northEast.lng,
-            bottomLatitude: southWest.lat,
-            topLatitude: northEast.lat
-        });
-
         // Clear existing timers
         if (debounceTimer.value) {
             clearTimeout(debounceTimer.value);
@@ -113,12 +105,6 @@ onMounted(() => {
         timelapseDebounceTimer.value = setTimeout(() => {
             fetchTimelapseData();
         }, 3000);
-    });
-
-    // Add zoom level logging
-    initialMap.value.on('zoomend', () => {
-        const currentZoom = initialMap.value.getZoom();
-        console.log('Current Zoom Level:', currentZoom);
     });
 });
 

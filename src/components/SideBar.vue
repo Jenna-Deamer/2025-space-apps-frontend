@@ -27,7 +27,8 @@
                         <p>Center NO2: {{ mapStore.tempoData.centerNO2.toFixed(2) }} µg/m³</p>
                         <template #content>
                             <strong>Nitrogen Dioxide (NO2)</strong><br>
-                            A reddish-brown gas that forms from vehicle emissions and industrial sources. High levels can irritate airways and worsen respiratory conditions.
+                            A reddish-brown gas that forms from vehicle emissions and industrial sources. High levels
+                            can irritate airways and worsen respiratory conditions.
                         </template>
                     </Tooltip>
                 </template>
@@ -44,28 +45,32 @@
                                 <p>PM2.5: {{ mapStore.groundData.list[0].components.pm2_5 }} µg/m³</p>
                                 <template #content>
                                     <strong>Fine Particulate Matter (PM2.5)</strong><br>
-                                    Tiny particles less than 2.5 micrometers in diameter. Can penetrate deep into lungs and bloodstream, causing serious health effects.
+                                    Tiny particles less than 2.5 micrometers in diameter. Can penetrate deep into lungs
+                                    and bloodstream, causing serious health effects.
                                 </template>
                             </Tooltip>
                             <Tooltip>
                                 <p>PM10: {{ mapStore.groundData.list[0].components.pm10 }} µg/m³</p>
                                 <template #content>
                                     <strong>Coarse Particulate Matter (PM10)</strong><br>
-                                    Particles less than 10 micrometers in diameter. Can cause irritation to eyes, nose, and throat, and aggravate asthma.
+                                    Particles less than 10 micrometers in diameter. Can cause irritation to eyes, nose,
+                                    and throat, and aggravate asthma.
                                 </template>
                             </Tooltip>
                             <Tooltip>
                                 <p>CO: {{ mapStore.groundData.list[0].components.co }} µg/m³</p>
                                 <template #content>
                                     <strong>Carbon Monoxide (CO)</strong><br>
-                                    A colorless, odorless gas from incomplete fuel combustion. Reduces oxygen delivery to organs and tissues.
+                                    A colorless, odorless gas from incomplete fuel combustion. Reduces oxygen delivery
+                                    to organs and tissues.
                                 </template>
                             </Tooltip>
                             <Tooltip>
                                 <p>O3: {{ mapStore.groundData.list[0].components.o3 }} µg/m³</p>
                                 <template #content>
                                     <strong>Ground-level Ozone (O3)</strong><br>
-                                    Forms when pollutants react in sunlight. Can trigger asthma attacks and reduce lung function.
+                                    Forms when pollutants react in sunlight. Can trigger asthma attacks and reduce lung
+                                    function.
                                 </template>
                             </Tooltip>
                         </div>
@@ -83,28 +88,32 @@
                                 <p>NO: {{ mapStore.groundData.list[0].components.no }} µg/m³</p>
                                 <template #content>
                                     <strong>Nitric Oxide (NO)</strong><br>
-                                    A colorless gas produced by combustion processes. Combines with oxygen to form nitrogen dioxide (NO2).
+                                    A colorless gas produced by combustion processes. Combines with oxygen to form
+                                    nitrogen dioxide (NO2).
                                 </template>
                             </Tooltip>
                             <Tooltip>
                                 <p>NO2: {{ mapStore.groundData.list[0].components.no2 }} µg/m³</p>
                                 <template #content>
                                     <strong>Nitrogen Dioxide (NO2)</strong><br>
-                                    A reddish-brown gas that forms from vehicle emissions and industrial sources. High levels can irritate airways and worsen respiratory conditions.
+                                    A reddish-brown gas that forms from vehicle emissions and industrial sources. High
+                                    levels can irritate airways and worsen respiratory conditions.
                                 </template>
                             </Tooltip>
                             <Tooltip>
                                 <p>SO2: {{ mapStore.groundData.list[0].components.so2 }} µg/m³</p>
                                 <template #content>
                                     <strong>Sulfur Dioxide (SO2)</strong><br>
-                                    A gas with a pungent smell from burning fossil fuels. Can cause respiratory problems and eye irritation.
+                                    A gas with a pungent smell from burning fossil fuels. Can cause respiratory problems
+                                    and eye irritation.
                                 </template>
                             </Tooltip>
                             <Tooltip>
                                 <p>NH3: {{ mapStore.groundData.list[0].components.nh3 }} µg/m³</p>
                                 <template #content>
                                     <strong>Ammonia (NH3)</strong><br>
-                                    A colorless gas with a sharp smell, mainly from agricultural activities and waste treatment. Can irritate eyes, nose, and throat.
+                                    A colorless gas with a sharp smell, mainly from agricultural activities and waste
+                                    treatment. Can irritate eyes, nose, and throat.
                                 </template>
                             </Tooltip>
                         </div>
@@ -116,11 +125,14 @@
             <!-- Forecast Card -->
             <section class="card forecast">
                 <h3>Air Quality Forecast</h3>
-                <div class="forecast-day" v-for="day in forecast" :key="day.date">
-                    <p>{{ day.date }}</p>
-                    <p :class="['aqi-color', day.aqiClass]">{{ day.aqi }} ({{ day.category }})</p>
-                    <p>{{ day.advice }}</p>
-                </div>
+                <template v-if="mapStore.forecastData && mapStore.forecastData.list.length > 0">
+                    <div class="forecast-day" v-for="day in formattedForecast" :key="day.date">
+                        <p>{{ day.date }}</p>
+                        <p :class="['aqi-color', day.aqiClass]">{{ day.aqi }} ({{ day.category }})</p>
+                        <p>{{ day.advice }}</p>
+                    </div>
+                </template>
+                <p v-else>Forecast data unavailable</p>
             </section>
 
             <TimeLapse />
@@ -142,11 +154,64 @@ const toggleAdvanced = () => {
     isAdvancedOpen.value = !isAdvancedOpen.value;
 }
 
-// Placeholder for forecast (not fetched yet)
-const forecast = ref([
-    { date: 'October 5th 2025', aqi: 45, category: 'Good', aqiClass: 'good', advice: 'Enjoy outdoor activities.' },
-    { date: 'October 6th 2025', aqi: 55, category: 'Moderate', aqiClass: 'moderate', advice: 'Sensitive groups should limit prolonged outdoor exertion.' },
-]);
+// Computed: Format forecast data from API
+const formattedForecast = computed(() => {
+    if (!mapStore.forecastData || !mapStore.forecastData.list.length) return [];
+
+    return mapStore.forecastData.list.map((item) => {
+        const date = new Date(item.dt * 1000);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        const aqi = item.main.aqi;
+        let category = '';
+        let aqiClass = '';
+        let advice = '';
+
+        switch (aqi) {
+            case 1:
+                category = 'Good';
+                aqiClass = 'good';
+                advice = "Air quality is good, it's safe to go outside.";
+                break;
+            case 2:
+                category = 'Moderate';
+                aqiClass = 'moderate';
+                advice = 'Air quality is acceptable. Sensitive individuals should consider limiting prolonged outdoor exertion.';
+                break;
+            case 3:
+                category = 'Unhealthy for Sensitive Groups';
+                aqiClass = 'unhealthy-for-sensitive-groups';
+                advice = 'Members of sensitive groups may experience health effects.';
+                break;
+            case 4:
+                category = 'Unhealthy';
+                aqiClass = 'unhealthy';
+                advice = 'Everyone may begin to experience health effects.';
+                break;
+            case 5:
+                category = 'Very Unhealthy';
+                aqiClass = 'very-unhealthy';
+                advice = 'Health alert: Everyone may experience more serious health effects.';
+                break;
+            default:
+                category = 'Unknown';
+                aqiClass = '';
+                advice = 'Data unavailable.';
+        }
+
+        return {
+            date: formattedDate,
+            aqi,
+            category,
+            aqiClass,
+            advice
+        };
+    });
+});
 
 // Computed: AQI category based on value (standard EPA breakpoints)
 const aqiCategory = computed(() => {
@@ -288,14 +353,17 @@ const healthAdvice = computed(() => {
     font-size: 0.96em;
     max-height: 0;
     opacity: 0;
-    overflow: visible; /* Changed from hidden to visible */
+    overflow: visible;
+    /* Changed from hidden to visible */
     transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
 }
 
 .advanced-ground-data.open {
-    max-height: 300px; /* Increased to accommodate tooltips */
+    max-height: 300px;
+    /* Increased to accommodate tooltips */
     opacity: 1;
-    overflow: visible; /* Ensure tooltips aren't clipped when open */
+    overflow: visible;
+    /* Ensure tooltips aren't clipped when open */
 }
 
 .ground-data .toggle-button {
@@ -361,18 +429,24 @@ const healthAdvice = computed(() => {
 }
 
 @media (max-width: 768px) {
-     .sidebar-content {
-       padding: 0.25rem;
-       gap: 0.5rem;
-     }
-     .card {
-       padding: 0.5rem;
-     }
-     .aqi-value, .aqi-color {
-       font-size: 0.9em;
-     }
-     .main-pollutants-ground-data p, .other-ground-data p, .advanced-ground-data p {
-       font-size: 0.85em;
-     }
-   }
+    .sidebar-content {
+        padding: 0.25rem;
+        gap: 0.5rem;
+    }
+
+    .card {
+        padding: 0.5rem;
+    }
+
+    .aqi-value,
+    .aqi-color {
+        font-size: 0.9em;
+    }
+
+    .main-pollutants-ground-data p,
+    .other-ground-data p,
+    .advanced-ground-data p {
+        font-size: 0.85em;
+    }
+}
 </style>
