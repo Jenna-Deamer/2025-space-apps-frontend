@@ -82,7 +82,7 @@ export const airQualityService = {
 
         try {
             console.log('Fetching Ground data...');
-            const response = await fetch(`http://localhost:8080/api/ground-based-air-quality/retrieve?lat=${lat}&lon=${lon}`);
+            const response = await fetch(`${process.env.API_BASE_URL}/ground-based-air-quality/retrieve?lat=${lat}&lon=${lon}`);
             if (!response.ok) throw new Error('Failed to fetch Ground data');
             const data = await response.json();
             console.log(data);
@@ -111,7 +111,7 @@ export const airQualityService = {
     async getForecastData(lon: number, lat: number): Promise<any | null> {
         try {
             console.log('Fetching Forecast data...');
-            const response = await fetch(`http://localhost:8080/api/ground-based-air-quality/retrieveForecast?lat=${lat}&lon=${lon}`);
+            const response = await fetch(`${process.env.API_BASE_URL}/ground-based-air-quality/retrieveForecast?lat=${lat}&lon=${lon}`);
             if (!response.ok) throw new Error('Failed to fetch Forecast data');
             const data = await response.json();
             console.log(data);
@@ -125,7 +125,7 @@ export const airQualityService = {
     async getTempoData(lat1: number, lat2: number, lon1: number, lon2: number, retryCount = 0, maxRetries = 3): Promise<{ minNO2: number, maxNO2: number, centerNO2: number, imageBytes: string } | null> {
         try {
             console.log('Fetching TEMPO data...');
-            const response = await fetch(`http://localhost:8080/api/level-three/retrieve?lat1=${lat1}&lat2=${lat2}&lon1=${lon1}&lon2=${lon2}`, {
+            const response = await fetch(`${process.env.API_BASE_URL}/level-three/retrieve?lat1=${lat1}&lat2=${lat2}&lon1=${lon1}&lon2=${lon2}`, {
                 signal: AbortSignal.timeout(10000)
             });
 
@@ -168,7 +168,7 @@ export const airQualityService = {
     async getTempoDataHistory(lat1: number, lat2: number, lon1: number, lon2: number, n: number, retryCount = 0, maxRetries = 3): Promise<TempoDataHistoryItem[] | null> {
         try {
             console.log(`Fetching ${n} latest TEMPO data...`);
-            const response = await fetch(`http://localhost:8080/api/level-three/retrieveN?lat1=${lat1}&lat2=${lat2}&lon1=${lon1}&lon2=${lon2}&n=${n}`, {
+            const response = await fetch(`${process.env.API_BASE_URL}/level-three/retrieveN?lat1=${lat1}&lat2=${lat2}&lon1=${lon1}&lon2=${lon2}&n=${n}`, {
                 signal: AbortSignal.timeout(15000)
             });
 
@@ -208,7 +208,7 @@ export const airQualityService = {
     async getTempoDataFull(retryCount = 0, maxRetries = 3): Promise<{ minNO2: number, maxNO2: number, imageBytes: string, scaleFactor: number, generatedAt: string } | null> {
         try {
             console.log('Fetching full TEMPO data...');
-            const response = await fetch(`http://localhost:8080/api/level-three/retrieveFull`, {
+            const response = await fetch(`${process.env.API_BASE_URL}/level-three/retrieveFull`, {
                 signal: AbortSignal.timeout(15000)
             });
 
@@ -248,7 +248,7 @@ export const airQualityService = {
 
     async reverseGeocode(lat: number, lon: number) {
         try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
+            const response = await fetch(`${process.env.NOMINATIM_BASE_URL}/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
             const data = await response.json();
             // Extract city name; fallback to display_name if city is not available
             return data.address?.city || data.address?.town || data.address?.village || data.display_name || 'Unknown';

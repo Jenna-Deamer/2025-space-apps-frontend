@@ -21,6 +21,7 @@
     "@ionic/vue": "^8.0.0",
     "@ionic/vue-router": "^8.0.0",
     "axios": "^1.12.2",
+    "dotenv": "^17.2.3",
     "ionicons": "^7.0.0",
     "leaflet": "^1.9.4",
     "pinia": "^3.0.3",
