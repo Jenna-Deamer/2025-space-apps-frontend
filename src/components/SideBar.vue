@@ -158,7 +158,7 @@ const toggleAdvanced = () => {
 const formattedForecast = computed(() => {
     if (!mapStore.forecastData || !mapStore.forecastData.list.length) return [];
 
-    return mapStore.forecastData.list.map((item) => {
+    return mapStore.forecastData.list.slice(0, 4).map((item) => {
         const date = new Date(item.dt * 1000);
         const formattedDate = date.toLocaleDateString('en-US', {
             month: 'long',
