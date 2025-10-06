@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, onUnmounted } from 'vue';
 import { useMapStore } from '../stores/MapStore';
 
 const searchInput = ref<HTMLInputElement | null>(null);
@@ -50,7 +50,7 @@ function constrainToBounds(lat: number, lng: number): { lat: number, lng: number
     return DEFAULT_LOCATION;
 }
 
-onMounted(() => {
+function initAutocomplete() {
     if (window.google && window.google.maps && searchInput.value) {
         const autocomplete = new window.google.maps.places.Autocomplete(searchInput.value, {
             types: ['geocode'],
@@ -65,6 +65,24 @@ onMounted(() => {
                 const constrainedLocation = constrainToBounds(lat, lng);
                 mapStore.setSelectedLocation(constrainedLocation);
             }
+        });
+    }
+}
+
+onMounted(() => {
+    // Check if Google Maps is already loaded
+    if (window.googleMapsReady) {
+        initAutocomplete();
+    } else {
+        // Wait for Google Maps to load
+        const handleMapsReady = () => {
+            initAutocomplete();
+        };
+        window.addEventListener('google-maps-ready', handleMapsReady);
+
+        // Cleanup listener on unmount
+        onUnmounted(() => {
+            window.removeEventListener('google-maps-ready', handleMapsReady);
         });
     }
 });
