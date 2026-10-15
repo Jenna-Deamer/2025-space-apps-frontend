@@ -63,6 +63,12 @@ function moleculesToMicrogramsPerCubicMeter(
     return (moleculesPerM3 * molecularWeight / AVOGADRO) * 1e6;
 }
 
+// Archived build, fun mode: everything is local static files, so load as fast
+// as possible. (The simulated network latency was retired 2026-10-15.)
+async function simulateLatency(): Promise<void> {
+    return;
+}
+
 export const airQualityService = {
     async getGroundData(lon: number, lat: number): Promise<GroundDataResponse | null> {
         const CACHE_KEY = `groundData_cache_${lon}_${lat}`;
@@ -81,6 +87,7 @@ export const airQualityService = {
         }
 
         try {
+            await simulateLatency();
             const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/ground-based-air-quality/retrieve?lat=${lat}&lon=${lon}`);
             if (!response.ok) throw new Error('Failed to fetch Ground data');
             const data = await response.json();
@@ -108,6 +115,7 @@ export const airQualityService = {
 
     async getForecastData(lon: number, lat: number): Promise<any | null> {
         try {
+            await simulateLatency();
             const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/ground-based-air-quality/retrieveForecast?lat=${lat}&lon=${lon}`);
             if (!response.ok) throw new Error('Failed to fetch Forecast data');
             const data = await response.json();
@@ -120,6 +128,7 @@ export const airQualityService = {
 
     async getTempoData(lat1: number, lat2: number, lon1: number, lon2: number, retryCount = 0, maxRetries = 3): Promise<{ minNO2: number, maxNO2: number, centerNO2: number, imageBytes: string } | null> {
         try {
+            await simulateLatency();
             const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/level-three/retrieve?lat1=${lat1}&lat2=${lat2}&lon1=${lon1}&lon2=${lon2}`, {
                 signal: AbortSignal.timeout(10000)
             });
@@ -155,7 +164,17 @@ export const airQualityService = {
 
     async getTempoDataHistory(lat1: number, lat2: number, lon1: number, lon2: number, n: number, retryCount = 0, maxRetries = 3): Promise<TempoDataHistoryItem[] | null> {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/level-three/retrieveN?lat1=${lat1}&lat2=${lat2}&lon1=${lon1}&lon2=${lon2}&n=${n}`, {
+            await simulateLatency();
+            // Archived build: timelapse frames are pre-rendered for a 4x3 grid
+            // of regions over North America. Pick the region holding the
+            // viewport center so the timelapse reflects the area being viewed,
+            // like the original per-viewport fetch did.
+            const centerLat = (lat1 + lat2) / 2;
+            const centerLon = (lon1 + lon2) / 2;
+            const col = Math.min(3, Math.max(0, Math.floor((centerLon + 167.99) / 154.98 * 4)));
+            const row = Math.min(2, Math.max(0, Math.floor((72.99 - centerLat) / 58.98 * 3)));
+            const region = row * 4 + col;
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/level-three/timelapse-r${region}`, {
                 signal: AbortSignal.timeout(15000)
             });
 
@@ -189,6 +208,7 @@ export const airQualityService = {
 
     async getTempoDataFull(retryCount = 0, maxRetries = 3): Promise<{ minNO2: number, maxNO2: number, imageBytes: string, scaleFactor: number, generatedAt: string } | null> {
         try {
+            await simulateLatency();
             const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/level-three/retrieveFull`, {
                 signal: AbortSignal.timeout(15000)
             });
@@ -221,14 +241,9 @@ export const airQualityService = {
     },
 
     async reverseGeocode(lat: number, lon: number) {
-        try {
-            const response = await fetch(`${import.meta.env.NOMINATIM_BASE_URL}/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
-            const data = await response.json();
-            // Extract city name; fallback to display_name if city is not available
-            return data.address?.city || data.address?.town || data.address?.village || data.display_name || 'Unknown';
-        } catch (error) {
-            console.error('Reverse geocoding error:', error);
-            return 'Unknown';
-        }
+        // Archived build: no external geocoding calls. The frozen slice covers
+        // the Barrie, Ontario area, so that is what every lookup returns.
+        await simulateLatency();
+        return 'Barrie, Ontario';
     }
 }

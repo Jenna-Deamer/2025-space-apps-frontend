@@ -37,9 +37,18 @@ onMounted(() => {
         maxBoundsViscosity: 1.0
     });
 
-    const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-        subdomains: 'abcd',
+    // CARTO's dark_all tiles now show an "API KEY REQUIRED" watermark without a key,
+    // so the dark basemap comes from Esri's key-free World Dark Gray Canvas instead.
+    const tileLayer = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://www.esri.com/">Esri</a>',
+        maxNativeZoom: 16,
+        maxZoom: 20,
+        minZoom: 5
+    }).addTo(initialMap.value);
+
+    // Labels overlay so city/road names stay visible like the original CARTO basemap
+    L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+        maxNativeZoom: 16,
         maxZoom: 20,
         minZoom: 5
     }).addTo(initialMap.value);
@@ -150,10 +159,13 @@ async function fetchMapData() {
             }
             currentBlobUrl.value = blobUrl;
 
-            // Use the same bounds that were sent to the backend
+            // Archived build: the overlay is one frozen full-disk slice (all of
+            // North America, real Aug 2025 TEMPO data), so it stays pinned to
+            // the granule's true geographic bounds no matter where the map is
+            // panned or how far it is zoomed.
             const tempoBounds = L.latLngBounds(
-                [lat2, lon1],  // top left (lat2, lon1)
-                [lat1, lon2]   // bottom right (lat1, lon2)
+                [72.99, -167.99],  // top left
+                [14.01, -13.01]    // bottom right
             );
 
             // Remove existing overlay if present

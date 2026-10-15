@@ -3,10 +3,19 @@
         <div class="project-title">
             <img src="/TempoLogo.webp" width="40px" height="40px" />
             <h1 class="project-name">Tempo Analytics</h1>
+            <span class="archive-badge" tabindex="0" ref="badgeRef" @mouseenter="showTip"
+                @mouseleave="hideTip" @focus="showTip" @blur="hideTip">Archived demo</span>
+            <Teleport to="body">
+                <div v-if="tipVisible" class="archive-tooltip" :style="tipStyle" role="tooltip">Archived demo.
+                    This project is retired and preserved as a static snapshot. The TEMPO overlay shows real NO2
+                    data from August 2025. Weather, ground-level and forecast readings are sample data. No live
+                    APIs are used.</div>
+            </Teleport>
         </div>
 
         <div class="search-container">
-            <input ref="searchInput" class="search-input" type="text" placeholder="Enter Location..." />
+            <input ref="searchInput" class="search-input" type="text" placeholder="Search disabled in archived version"
+                disabled title="Place search needed the Google Places API, which is retired in this frozen build." />
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 class="lucide lucide-search-icon lucide-search">
@@ -18,75 +27,34 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onUnmounted } from 'vue';
-import { useMapStore } from '../stores/MapStore';
+import { ref } from 'vue';
 
-const searchInput = ref<HTMLInputElement | null>(null);
-const mapStore = useMapStore();
+// Archived build: the Google Places search box is retired (it needed a live
+// API key). The input above stays as a disabled visual remnant.
 
-const MAP_BOUNDS = {
-    minLat: 15,
-    maxLat: 70,
-    minLng: -170.59570312500003,
-    maxLng: -51.02050781250001
-};
+// The "Archived demo" tooltip is teleported to <body> because ion-header
+// creates a stacking context that traps anything inside it below the map's
+// layers, no matter the z-index. As a direct child of body with
+// position: fixed it always paints on top.
+const badgeRef = ref<HTMLElement | null>(null);
+const tipVisible = ref(false);
+const tipStyle = ref<Record<string, string>>({});
 
-const DEFAULT_LOCATION = { lat: 44.59232, lng: -79.45835 };
-
-function constrainToBounds(lat: number, lng: number): { lat: number, lng: number } {
-    // Check if location is within bounds
-    const isWithinBounds =
-        lat >= MAP_BOUNDS.minLat &&
-        lat <= MAP_BOUNDS.maxLat &&
-        lng >= MAP_BOUNDS.minLng &&
-        lng <= MAP_BOUNDS.maxLng;
-
-    if (isWithinBounds) {
-        return { lat, lng };
-    }
-
-    // Show alert and return to default location if out of bounds
-    alert('TEMPO data is only available for North America. Please select a location within the specified bounds.');
-    return DEFAULT_LOCATION;
-}
-
-function initAutocomplete() {
-    if (window.google && window.google.maps && searchInput.value) {
-        const autocomplete = new window.google.maps.places.Autocomplete(searchInput.value, {
-            types: ['geocode'],
-        });
-        autocomplete.addListener('place_changed', () => {
-            const place = autocomplete.getPlace();
-            if (place.geometry && place.geometry.location) {
-                const lat = place.geometry.location.lat();
-                const lng = place.geometry.location.lng();
-
-                // Constrain location to map bounds
-                const constrainedLocation = constrainToBounds(lat, lng);
-                mapStore.setSelectedLocation(constrainedLocation);
-            }
-        });
-    }
-}
-
-onMounted(() => {
-    // Check if Google Maps is already loaded
-    if (window.googleMapsReady) {
-        initAutocomplete();
-    } else {
-        // Wait for Google Maps to load
-        const handleMapsReady = () => {
-            initAutocomplete();
+function showTip() {
+    const el = badgeRef.value;
+    if (el) {
+        const r = el.getBoundingClientRect();
+        tipStyle.value = {
+            top: `${r.bottom + 8}px`,
+            left: `${Math.min(Math.max(8, r.left), window.innerWidth - 256)}px`,
         };
-        window.addEventListener('google-maps-ready', handleMapsReady);
-
-        // Cleanup listener on unmount
-        onUnmounted(() => {
-            window.removeEventListener('google-maps-ready', handleMapsReady);
-        });
     }
-});
+    tipVisible.value = true;
+}
 
+function hideTip() {
+    tipVisible.value = false;
+}
 </script>
 
 <style>
@@ -126,6 +94,40 @@ input {
 
 .search-input {
     padding-left: 2.5em;
+}
+
+.search-input:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.archive-badge {
+    font-size: 0.7em;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #0f172a;
+    background: #fbbf24;
+    border-radius: 999px;
+    padding: 0.25em 0.7em;
+    margin-left: 0.75em;
+    white-space: nowrap;
+    cursor: help;
+}
+
+.archive-tooltip {
+    position: fixed;
+    width: 240px;
+    font-size: 0.85em;
+    font-weight: 400;
+    line-height: 1.45;
+    color: #e2e8f0;
+    background: #1e293b;
+    border: 1px solid #fbbf24;
+    border-radius: 8px;
+    padding: 0.7em 0.9em;
+    z-index: 9999;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
 }
 
 .search-container svg {
